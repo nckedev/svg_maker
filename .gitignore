@@ -1,3 +1,4 @@
 /target
 svg_maker_derive/target
 Cargo.lock
+test2.svg

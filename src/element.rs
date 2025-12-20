@@ -9,7 +9,7 @@ use crate::{
     color::Color,
     marker_traits::{BaseElement, OpenEndedShape},
     style::{LineCap, Style},
-    units::{Coord, Length, XCoord, YCoord},
+    units::{Coord, Length, Px, XCoord, YCoord},
     visit::Visit,
 };
 
@@ -192,6 +192,11 @@ impl<T: BaseStyle> Element<T> {
 
     pub fn stroke(mut self, color: Color) -> Self {
         self.style.stroke = Some(color);
+        self
+    }
+
+    pub fn stroke_width(mut self, width: impl Into<Length>) -> Self {
+        self.style.stroke_width = Some(width.into());
         self
     }
 }

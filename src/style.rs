@@ -1,5 +1,3 @@
-
-
 use crate::{Visit, buffer::Buffer, color::Color, units::Length};
 
 #[derive(Default)]
@@ -57,6 +55,7 @@ impl Visit for Style {
         visit_if_not_none!(stroke, "stroke");
         visit_if_not_none!(fill_opacity, "fill-opacity");
         visit_if_not_none!(fill_rule, "fill-rule");
+        visit_if_not_none!(stroke_width, "stroke-width");
 
         buffer.push_str(r##"" "##);
     }

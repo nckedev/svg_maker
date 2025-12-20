@@ -11,6 +11,7 @@ fn main() {
         ElementBuilder::line(Px(1) + Percent(2) + Px(3) + Px(2), Percent(5), 100, 100)
             .id("myid")
             .stroke(Color::Black)
+            .stroke_width(Percent(50))
             .stroke_linecap(LineCap::Butt)
             .fill(Color::Red),
     );
