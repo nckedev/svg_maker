@@ -1,3 +1,5 @@
+use std::{error::Error, fs::File, io::Write};
+
 use svg_maker_derive::*;
 
 use crate::{
@@ -95,6 +97,12 @@ impl Svg {
         buffer.push_tag_close("svg");
         eprintln!(" buffer:\n {}", buffer.str());
         buffer.str().to_string()
+    }
+
+    pub fn render_to_file(&self, path: &str) -> Result<(), Box<dyn Error>> {
+        let mut f = File::create(path)?;
+        f.write_all(self.render().as_bytes())?;
+        Ok(())
     }
 
     pub fn get_element_by_id<T: Visit + 'static>(&mut self, id: &str) -> Option<&mut Element<T>> {

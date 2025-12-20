@@ -8,11 +8,13 @@ use svg_maker::{
 
 fn main() {
     let s = Svg::new().size(100, 100).push(
-        ElementBuilder::line(Px(1) + Percent(2) + Px(3) + Px(2), Percent(5), 6, 7)
+        ElementBuilder::line(Px(1) + Percent(2) + Px(3) + Px(2), Percent(5), 100, 100)
             .id("myid")
+            .stroke(Color::Black)
             .stroke_linecap(LineCap::Butt)
             .fill(Color::Red),
     );
 
     println!("{}", s.render());
+    let _ = s.render_to_file("test2.svg");
 }

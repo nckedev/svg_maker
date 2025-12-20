@@ -115,6 +115,49 @@ impl From<u32> for Length {
     }
 }
 
+impl<T: Into<Length>> Sub<T> for Length {
+    type Output = Length;
+
+    fn sub(self, _rhs: T) -> Self::Output {
+        // TODO: implement
+        self
+    }
+}
+
+impl<T: Into<Length>> Add<T> for Length {
+    type Output = Length;
+
+    fn add(self, rhs: T) -> Self::Output {
+        match (self, rhs.into()) {
+            (Length::Percent(lhs), Length::Percent(rhs)) => Length::Percent(Percent(lhs.0 + rhs.0)),
+            (Length::Px(lhs), Length::Px(rhs)) => Length::Px(Px(lhs.0 + rhs.0)),
+            (Length::Expr(_expr1), Length::Expr(_expr2)) => todo!("expr + expr"),
+            (Length::Expr(mut lhs), rhs) => {
+                // £TODO: Check if we can reduce the expression here, ie lhs.rhs has same type as
+                // rhs then just add them
+                lhs.push_rhs(
+                    "+",
+                    Expr {
+                        lhs: Rc::new(rhs),
+                        op: None,
+                        rhs: None,
+                    },
+                );
+                Length::Expr(lhs)
+            }
+            (lhs, rhs) => Length::Expr(Expr {
+                lhs: Rc::new(lhs),
+                op: Some("+".to_string()),
+                rhs: Some(Box::new(Expr {
+                    lhs: Rc::new(rhs),
+                    op: None,
+                    rhs: None,
+                })),
+            }),
+        }
+    }
+}
+
 #[derive(Display, Debug)]
 pub struct Percent(pub u32);
 
@@ -124,12 +167,6 @@ impl Visit for Percent {
     }
 }
 
-// impl<T: LengthUnit + Display> Visit for T {
-//     fn visit(&self, buffer: &mut Buffer) {
-//         buffer.push_str(&format!("{}", self));
-//     }
-// }
-
 #[derive(Clone, Copy, Debug)]
 pub struct Px(pub u32);
 
@@ -138,8 +175,6 @@ impl Visit for Px {
         buffer.push_str(&self.0.to_string());
     }
 }
-
-// trait LengthUnit {}
 
 #[derive(Debug)]
 pub struct Expr {
@@ -212,46 +247,3 @@ impl_ops_for_lenght_units!(Percent, Px);
 //     //rhs = into Length
 // }
 //
-
-impl<T: Into<Length>> Sub<T> for Length {
-    type Output = Length;
-
-    fn sub(self, _rhs: T) -> Self::Output {
-        // TODO: implement
-        self
-    }
-}
-
-impl<T: Into<Length>> Add<T> for Length {
-    type Output = Length;
-
-    fn add(self, rhs: T) -> Self::Output {
-        match (self, rhs.into()) {
-            (Length::Percent(lhs), Length::Percent(rhs)) => Length::Percent(Percent(lhs.0 + rhs.0)),
-            (Length::Px(lhs), Length::Px(rhs)) => Length::Px(Px(lhs.0 + rhs.0)),
-            (Length::Expr(_expr1), Length::Expr(_expr2)) => todo!("expr + expr"),
-            (Length::Expr(mut lhs), rhs) => {
-                // £TODO: Check if we can reduce the expression here, ie lhs.rhs has same type as
-                // rhs then just add them
-                lhs.push_rhs(
-                    "+",
-                    Expr {
-                        lhs: Rc::new(rhs),
-                        op: None,
-                        rhs: None,
-                    },
-                );
-                Length::Expr(lhs)
-            }
-            (lhs, rhs) => Length::Expr(Expr {
-                lhs: Rc::new(lhs),
-                op: Some("+".to_string()),
-                rhs: Some(Box::new(Expr {
-                    lhs: Rc::new(rhs),
-                    op: None,
-                    rhs: None,
-                })),
-            }),
-        }
-    }
-}
