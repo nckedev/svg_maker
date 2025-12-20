@@ -5,4 +5,5 @@ edition = "2024"
 
 [dependencies]
 derive_more = { version = "2.1", features = ["display"] }
+num-traits = "0.2.19"
 svg_maker_derive = { path = "./svg_maker_derive" }

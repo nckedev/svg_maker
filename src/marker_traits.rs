@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use std::any::Any;
 
 use crate::{Visit, element::Element};

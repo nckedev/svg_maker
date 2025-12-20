@@ -2,7 +2,8 @@ use svg_maker::{
     Svg,
     color::Color,
     element::ElementBuilder,
-    style::{LineCap, Percent, Px},
+    style::LineCap,
+    units::{Percent, Px},
 };
 
 fn main() {

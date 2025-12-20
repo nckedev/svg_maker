@@ -1,13 +1,15 @@
-use crate::visit::Visit;
+use crate::{Options, visit::Visit};
 
 pub struct Buffer {
     inner: String,
+    pub(crate) opts: Options,
 }
 
 impl Buffer {
     pub fn with_capacity(cap: usize) -> Self {
         Self {
             inner: String::with_capacity(cap),
+            opts: Options::default(),
         }
     }
 

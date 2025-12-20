@@ -4,11 +4,12 @@ use std::{
 };
 
 use crate::{
-    BaseStyle, Command, Coord, Line, Path, Raw, Shape,
+    BaseStyle, Command, Line, Path, Raw, Shape,
     buffer::Buffer,
     color::Color,
     marker_traits::{BaseElement, OpenEndedShape},
-    style::{Length, LineCap, Style},
+    style::{LineCap, Style},
+    units::{Coord, Length, XCoord, YCoord},
     visit::Visit,
 };
 
@@ -84,23 +85,25 @@ impl Element<Path> {
         self
     }
 
-    pub fn move_to(mut self, x: u16, y: u16) -> Self {
-        self.kind.push(Command::MoveTo(Coord(x, y)));
+    pub fn move_to(mut self, x: impl Into<XCoord>, y: impl Into<YCoord>) -> Self {
+        self.kind.push(Command::MoveTo(Coord(x.into(), y.into())));
         self
     }
 
-    pub fn move_to_relative(mut self, x: u16, y: u16) -> Self {
-        self.kind.push(Command::MoveToRelative(Coord(x, y)));
+    pub fn move_to_relative(mut self, x: impl Into<XCoord>, y: impl Into<YCoord>) -> Self {
+        self.kind
+            .push(Command::MoveToRelative(Coord(x.into(), y.into())));
         self
     }
 
-    pub fn line(mut self, x: u16, y: u16) -> Self {
-        self.kind.push(Command::Line(Coord(x, y)));
+    pub fn line(mut self, x: impl Into<XCoord>, y: impl Into<YCoord>) -> Self {
+        self.kind.push(Command::Line(Coord(x.into(), y.into())));
         self
     }
 
-    pub fn line_relative(mut self, x: u16, y: u16) -> Self {
-        self.kind.push(Command::LineRelative(Coord(x, y)));
+    pub fn line_relative(mut self, x: impl Into<XCoord>, y: impl Into<YCoord>) -> Self {
+        self.kind
+            .push(Command::LineRelative(Coord(x.into(), y.into())));
         self
     }
 }

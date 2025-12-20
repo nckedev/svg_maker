@@ -3,8 +3,8 @@ use svg_maker_derive::*;
 use crate::{
     buffer::Buffer,
     element::Element,
-    marker_traits::{BaseElement, BaseStyle, ClosedShape, OpenEndedShape, TextElement},
-    style::{Length, Style},
+    marker_traits::{BaseElement, BaseStyle, ClosedShape, OpenEndedShape},
+    units::{Coord, Length},
     visit::Visit,
 };
 
@@ -15,8 +15,10 @@ pub mod color;
 pub mod element;
 mod marker_traits;
 pub mod style;
+pub mod units;
 pub mod visit;
 
+#[derive(BaseStyle)]
 pub struct Svg {
     w: u16,
     h: u16,
@@ -142,9 +144,17 @@ impl Visit for Viewbox {
     }
 }
 
-struct Options {
-    invert_y: bool,
-    generate_id_if_none: bool,
+#[derive(Default)]
+pub(crate) struct Options {
+    pub(crate) invert_y: bool,
+    pub(crate) _generate_id_if_none: bool,
+    pub(crate) _optimizations: Optimizations,
+    pub(crate) container_size: f64,
+}
+
+#[derive(Default)]
+pub(crate) struct Optimizations {
+    pub(crate) _remove_unit_for_px: bool,
 }
 
 // Line ===============================================
@@ -231,7 +241,7 @@ impl Visit for Path {
 // Rect ==============================================
 
 #[derive(Default, BaseStyle, ClosedShape)]
-struct Rect {
+pub struct Rect {
     x: Length,
     y: Length,
     width: Length,
@@ -265,10 +275,6 @@ impl Visit for Raw {
         buffer.push_str(&self.inner);
     }
 }
-
-// Cood ======================================
-pub struct Coord(u16, u16);
-struct Delta(u16, u16);
 
 pub enum Command {
     MoveTo(Coord),
@@ -307,7 +313,8 @@ mod tests {
     use crate::{
         color::Color,
         element::ElementBuilder,
-        style::{LineCap, Percent, Px},
+        style::LineCap,
+        units::{Percent, Px},
     };
 
     use super::*;
@@ -322,7 +329,7 @@ mod tests {
                     .class("testing")
                     .class("testing22")
                     .transform(element::Transform::Scale(2, 2))
-                    .push(Command::MoveTo(Coord(10, 10)))
+                    // .push(Command::MoveTo(Coord(10, 10)))
                     .move_to(10, 9)
                     .stroke(Color::Red)
                     .fill(Color::Black),

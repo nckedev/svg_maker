@@ -113,7 +113,7 @@ impl Visit for Color {
     }
 }
 
-struct Oklch<L, C> {
+pub struct Oklch<L, C> {
     lum: L,
     chroma: C,
     hue: u16,
