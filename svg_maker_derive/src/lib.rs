@@ -78,3 +78,14 @@ pub fn derive_hx(tokens: TokenStream) -> TokenStream {
     }
     .into()
 }
+
+#[proc_macro_derive(Shape)]
+pub fn derive_shape(tokens: TokenStream) -> TokenStream {
+    let ast: DeriveInput = syn::parse(tokens).unwrap();
+    let ident = ast.ident;
+
+    quote! {
+        impl Shape for #ident {}
+    }
+    .into()
+}

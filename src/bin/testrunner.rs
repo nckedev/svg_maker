@@ -2,6 +2,7 @@ use svg_maker::{
     Line, Shape, Svg,
     color::Color,
     element::ElementBuilder,
+    shapes::use_href::Use,
     style::LineCap,
     units::{Percent, Px},
 };
@@ -15,6 +16,7 @@ fn main() {
                 .id("new")
                 .stroke(Color::Red),
         )
+        .push(Use::new(1, 2).into_element())
         .push(
             ElementBuilder::line(Px(1) + Percent(2) + Px(3) + Px(2), Percent(5), 100, 100)
                 .id("myid")

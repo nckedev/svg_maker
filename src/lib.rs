@@ -16,6 +16,7 @@ mod buffer;
 pub mod color;
 pub mod element;
 mod marker_traits;
+pub mod shapes;
 pub mod style;
 pub mod units;
 pub mod visit;

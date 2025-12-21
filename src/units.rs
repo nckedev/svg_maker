@@ -11,7 +11,7 @@ use crate::{buffer::Buffer, visit::Visit};
 
 pub struct Coord(pub XCoord, pub YCoord);
 
-#[derive(Display, Debug)]
+#[derive(Display, Debug, Default)]
 pub struct XCoord(f64);
 
 impl<T: Num + Into<f64>> From<T> for XCoord {
@@ -26,7 +26,7 @@ impl Visit for XCoord {
     }
 }
 
-#[derive(Display, Debug)]
+#[derive(Display, Debug, Default)]
 pub struct YCoord(f64);
 
 impl<T: Num + Into<f64>> From<T> for YCoord {
