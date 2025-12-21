@@ -74,14 +74,8 @@ impl Default for Length {
 impl Visit for Length {
     fn visit(&self, buffer: &mut Buffer) {
         match self {
-            Length::Percent(percent) => {
-                percent.visit(buffer);
-                buffer.push('%');
-            }
-            Length::Px(px) => {
-                px.visit(buffer);
-                buffer.push_str("px");
-            }
+            Length::Percent(percent) => percent.visit(buffer),
+            Length::Px(px) => px.visit(buffer),
             Length::Expr(expr) => {
                 buffer.push_str("calc(");
                 expr.visit(buffer);
@@ -164,6 +158,7 @@ pub struct Percent(pub u32);
 impl Visit for Percent {
     fn visit(&self, buffer: &mut Buffer) {
         buffer.push_str(&self.0.to_string());
+        buffer.push('%');
     }
 }
 
@@ -173,6 +168,9 @@ pub struct Px(pub u32);
 impl Visit for Px {
     fn visit(&self, buffer: &mut Buffer) {
         buffer.push_str(&self.0.to_string());
+        if !buffer.opts.optimizations.remove_unit_for_px {
+            buffer.push_str("px");
+        }
     }
 }
 

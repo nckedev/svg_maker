@@ -76,6 +76,7 @@ impl Svg {
     #[must_use]
     pub fn render(&self) -> String {
         let mut buffer = Buffer::with_capacity(100);
+        buffer.opts.optimizations.remove_unit_for_px = true;
         buffer.push_tag("svg");
         buffer.push_attr("width", &self.w);
         buffer.push_attr("height", &self.h);
@@ -156,13 +157,13 @@ impl Visit for Viewbox {
 pub(crate) struct Options {
     pub(crate) invert_y: bool,
     pub(crate) _generate_id_if_none: bool,
-    pub(crate) _optimizations: Optimizations,
+    pub(crate) optimizations: Optimizations,
     pub(crate) container_size: f64,
 }
 
 #[derive(Default)]
 pub(crate) struct Optimizations {
-    pub(crate) _remove_unit_for_px: bool,
+    pub(crate) remove_unit_for_px: bool,
 }
 
 // Line ===============================================
