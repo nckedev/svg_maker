@@ -13,6 +13,12 @@ impl Visit for String {
     }
 }
 
+impl Visit for &str {
+    fn visit(&self, buffer: &mut Buffer) {
+        buffer.push_str(self);
+    }
+}
+
 impl<T: Visit> Visit for Vec<T> {
     fn visit(&self, buffer: &mut Buffer) {
         for x in self {

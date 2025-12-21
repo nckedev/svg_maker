@@ -9,7 +9,7 @@ use crate::{
     color::Color,
     marker_traits::{BaseElement, Hx, OpenEndedShape},
     style::{LineCap, Style},
-    units::{Coord, Length, Px, XCoord, YCoord},
+    units::{Coord, Length, XCoord, YCoord},
     visit::Visit,
 };
 
@@ -133,7 +133,7 @@ impl<T: Visit> Visit for Element<T> {
         self.style.visit(buffer);
         //TODO: if the element has child elementes like animations, include them before closing, if not do a
         //selfclose tag
-        buffer.push_str("/>\n");
+        buffer.push_tag_self_close();
     }
 }
 

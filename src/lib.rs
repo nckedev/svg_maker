@@ -86,13 +86,13 @@ impl Svg {
         buffer.push_tag_end();
         if !self.defs.is_empty() {
             buffer.push_tag("defs");
+            buffer.push_tag_end();
             for def in &self.defs {
                 def.visit(&mut buffer);
             }
             buffer.push_tag_close("defs");
         }
         for element in &self.children {
-            buffer.push_tab();
             element.visit(&mut buffer);
         }
         buffer.push_tag_close("svg");
@@ -153,17 +153,18 @@ impl Visit for Viewbox {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub(crate) struct Options {
     pub(crate) invert_y: bool,
-    pub(crate) _generate_id_if_none: bool,
     pub(crate) optimizations: Optimizations,
     pub(crate) container_size: f64,
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub(crate) struct Optimizations {
     pub(crate) remove_unit_for_px: bool,
+    pub(crate) remove_newline: bool,
+    pub(crate) remove_indent: bool,
 }
 
 // Line ===============================================

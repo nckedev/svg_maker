@@ -2,6 +2,7 @@ use crate::{Options, visit::Visit};
 
 pub struct Buffer {
     inner: String,
+    tabs: u32,
     pub(crate) opts: Options,
 }
 
@@ -10,28 +11,40 @@ impl Buffer {
         Self {
             inner: String::with_capacity(cap),
             opts: Options::default(),
+            tabs: 0,
         }
     }
 
+    /// pushes the start of a tag: "<tag .."
     pub fn push_tag(&mut self, tag: &str) {
+        self.indent();
         self.inner.push('<');
         self.inner.push_str(tag);
         self.inner.push(' ');
+        self.tabs += 1;
     }
 
+    /// append the end marker of a tag ">"
     pub fn push_tag_end(&mut self) {
         self.inner.push('>');
         self.push_newline();
     }
 
+    /// appends a closing tag like: "</tag>"
     pub fn push_tag_close(&mut self, tag: &str) {
+        self.tabs = self.tabs.saturating_sub(1);
+        self.indent();
         self.inner.push_str("</");
         self.inner.push_str(tag);
         self.inner.push('>');
+        self.push_newline();
     }
 
-    pub fn push_self_close(&mut self) {
+    /// appends "/>"
+    pub fn push_tag_self_close(&mut self) {
         self.inner.push_str("/>");
+        self.push_newline();
+        self.tabs = self.tabs.saturating_sub(1);
     }
 
     pub fn push_attr(&mut self, attr: &str, value: &impl Visit) {
@@ -55,12 +68,21 @@ impl Buffer {
         self.inner.push(c)
     }
 
-    pub fn push_tab(&mut self) {
-        self.inner.push('\t');
+    fn indent(&mut self) {
+        if !self.opts.optimizations.remove_indent {
+            let count = self.tabs;
+            for _ in 0..count {
+                self.inner.push('\t');
+            }
+        }
     }
-    pub fn push_newline(&mut self) {
-        self.inner.push('\n');
+
+    fn push_newline(&mut self) {
+        if !self.opts.optimizations.remove_newline {
+            self.inner.push('\n');
+        }
     }
+
     pub fn push_space(&mut self) {
         self.inner.push(' ');
     }
