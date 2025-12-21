@@ -15,7 +15,7 @@ pub trait OpenEndedShape {}
 
 pub trait ClosedShape {}
 
-/// marker trait for elements that contain text
+/// marker trait for elements that contains text
 /// text, textpath, tspan
 pub trait TextElement {}
 
@@ -41,3 +41,5 @@ pub trait Shape {
 pub trait Animate {}
 
 pub trait RootElement {}
+
+pub trait Hx {}

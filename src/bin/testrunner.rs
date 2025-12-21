@@ -12,6 +12,8 @@ fn main() {
             .id("myid")
             .stroke(Color::Black)
             .stroke_width(Percent(50))
+            .hx_ext()
+            .hx_sse_connect("test")
             .stroke_linecap(LineCap::Butt)
             .fill(Color::Red),
     );

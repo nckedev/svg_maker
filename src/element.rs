@@ -7,7 +7,7 @@ use crate::{
     BaseStyle, Command, Line, Path, Raw, Shape,
     buffer::Buffer,
     color::Color,
-    marker_traits::{BaseElement, OpenEndedShape},
+    marker_traits::{BaseElement, Hx, OpenEndedShape},
     style::{LineCap, Style},
     units::{Coord, Length, Px, XCoord, YCoord},
     visit::Visit,
@@ -44,6 +44,7 @@ pub struct Element<T: Sized> {
     /// the current element,
     pub(crate) style: Style,
     transforms: Option<Vec<Transform>>,
+    hx: Option<HxData>,
     kind: T,
 }
 
@@ -127,6 +128,7 @@ impl<T: Visit> Visit for Element<T> {
         self.kind.visit(buffer);
         buffer.push_attr_opt("id", &self.id);
         buffer.push_attr_opt("class", &self.class);
+        self.hx.visit(buffer);
         buffer.push_attr_opt("transform", &self.transforms);
         self.style.visit(buffer);
         //TODO: if the element has child elementes like animations, include them before closing, if not do a
@@ -142,6 +144,7 @@ impl<T: Visit> Element<T> {
             class: None,
             style: Style::default(),
             transforms: None,
+            hx: None,
             kind,
         }
     }
@@ -205,6 +208,81 @@ impl<T: OpenEndedShape> Element<T> {
     pub fn stroke_linecap(mut self, linecap: LineCap) -> Self {
         self.style.stroke_linecap = Some(linecap);
         self
+    }
+}
+
+impl<T: Hx> Element<T> {
+    pub fn hx_ext(mut self) -> Self {
+        if let Some(ref mut hx) = self.hx {
+            hx.ext = Some("sse".to_string());
+        } else {
+            self.hx = Some(HxData::ext("sse"));
+        }
+        self
+    }
+
+    pub fn hx_sse_connect(mut self, endpoint: &str) -> Self {
+        if let Some(ref mut hx) = self.hx {
+            hx.connect = Some(endpoint.to_string());
+        } else {
+            self.hx = Some(HxData::connect(endpoint));
+        }
+        self
+    }
+
+    pub fn hx_sse_swap(mut self, event_name: &str) -> Self {
+        if let Some(ref mut hx) = self.hx {
+            hx.swap = Some(event_name.to_string());
+        } else {
+            self.hx = Some(HxData::swap(event_name));
+        }
+        self
+    }
+}
+
+#[derive(Default)]
+struct HxData {
+    ext: Option<String>,
+    connect: Option<String>,
+    swap: Option<String>,
+}
+
+impl HxData {
+    pub fn ext(value: &str) -> Self {
+        Self {
+            ext: Some(value.to_string()),
+            ..Default::default()
+        }
+    }
+
+    pub fn connect(value: &str) -> Self {
+        Self {
+            connect: Some(value.to_string()),
+            ..Default::default()
+        }
+    }
+
+    pub fn swap(value: &str) -> Self {
+        Self {
+            swap: Some(value.to_string()),
+            ..Default::default()
+        }
+    }
+}
+
+impl Visit for Option<HxData> {
+    fn visit(&self, buffer: &mut Buffer) {
+        if let Some(hx) = self {
+            hx.visit(buffer);
+        }
+    }
+}
+
+impl Visit for HxData {
+    fn visit(&self, buffer: &mut Buffer) {
+        buffer.push_attr_opt("hx-ext", &self.ext);
+        buffer.push_attr_opt("hx-connect", &self.connect);
+        buffer.push_attr_opt("hx-swap", &self.swap);
     }
 }
 

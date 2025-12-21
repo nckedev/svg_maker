@@ -5,7 +5,7 @@ use svg_maker_derive::*;
 use crate::{
     buffer::Buffer,
     element::Element,
-    marker_traits::{BaseElement, BaseStyle, ClosedShape, OpenEndedShape},
+    marker_traits::{BaseElement, BaseStyle, ClosedShape, Hx, OpenEndedShape},
     units::{Coord, Length},
     visit::Visit,
 };
@@ -168,7 +168,7 @@ pub(crate) struct Optimizations {
 
 // Line ===============================================
 
-#[derive(Default, BaseStyle, OpenEndedShape)]
+#[derive(Default, BaseStyle, OpenEndedShape, Hx)]
 pub struct Line {
     x1: Length,
     y1: Length,
