@@ -90,6 +90,7 @@ pub enum Color {
     OklchFrom(Rc<Color>, u8, u8, u16, u8),
     CssVar(String),
     CurrentColor,
+    Url(String),
     // Test(Oklch<f32, u32>),
 }
 
@@ -108,6 +109,13 @@ impl Visit for Color {
             Color::OklchFrom(_color, _, _, _, _) => todo!(),
             Color::CssVar(_) => todo!(),
             Color::CurrentColor => "currentColor",
+            Color::Url(s) => {
+                if s.starts_with("#") {
+                    &format!("url({s})")
+                } else {
+                    &format!("url(#{s})")
+                }
+            }
         };
         buffer.push_str(str);
     }
