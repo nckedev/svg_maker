@@ -105,6 +105,12 @@ impl<T: Visit> Element<T> {
         self.id = Some(id.to_string());
         self
     }
+
+    pub fn render(&self) -> String {
+        let mut buffer = Buffer::with_capacity(100);
+        self.visit(&mut buffer);
+        buffer.str().to_string()
+    }
 }
 
 impl<T: BaseStyle> Element<T> {

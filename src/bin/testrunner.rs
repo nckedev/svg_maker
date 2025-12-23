@@ -7,6 +7,8 @@ use svg_maker::{
 };
 
 fn main() {
+    let e = Element::line(10, 10, 100, 100);
+
     let s = Svg::new()
         .size(100, 100)
         .css(
@@ -33,6 +35,6 @@ fn main() {
                 .fill(Color::Red),
         );
 
-    println!("{}", s.render());
+    println!("{}", e.render());
     let _ = s.render_to_file("test2.svg");
 }
