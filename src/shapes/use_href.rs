@@ -17,16 +17,25 @@ pub struct Use {
 }
 
 impl Use {
-    pub fn make_element(x: impl Into<XCoord>, y: impl Into<YCoord>) -> Element<Self> {
-        let s = Self {
+    pub fn new(x: impl Into<XCoord>, y: impl Into<YCoord>) -> Self {
+        Self {
             x: x.into(),
             y: y.into(),
             ..Default::default()
-        };
-        Element::new(s)
+        }
     }
 }
 impl Element<Use> {
+    #[must_use]
+    pub fn use_href<X, Y>(x: X, y: Y) -> Self
+    where
+        X: Into<XCoord>,
+        Y: Into<YCoord>,
+    {
+        let u = Use::new(x, y);
+        Element::from(u)
+    }
+
     #[must_use]
     pub fn href(mut self, target: &str) -> Self {
         if target.starts_with('#') {

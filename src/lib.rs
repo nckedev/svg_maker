@@ -231,8 +231,8 @@ mod tests {
 
     #[test]
     fn test_expr_reducing() {
-        let a = Px(2);
-        let b = Px(3);
+        let a = Px(2.);
+        let b = Px(3.);
         let c = a + b + Percent(4) + 3;
         let mut buf = Buffer::with_capacity(10);
         c.visit(&mut buf);

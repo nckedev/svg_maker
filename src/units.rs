@@ -12,7 +12,7 @@ use crate::{buffer::Buffer, visit::Visit};
 pub struct Coord(pub XCoord, pub YCoord);
 
 #[derive(Display, Debug, Default)]
-pub struct XCoord(f64);
+pub struct XCoord(pub f64);
 
 impl<T: Num + Into<f64>> From<T> for XCoord {
     fn from(value: T) -> Self {
@@ -27,7 +27,7 @@ impl Visit for XCoord {
 }
 
 #[derive(Display, Debug, Default)]
-pub struct YCoord(f64);
+pub struct YCoord(pub f64);
 
 impl<T: Num + Into<f64>> From<T> for YCoord {
     fn from(value: T) -> Self {
@@ -58,7 +58,7 @@ impl Length {
     pub fn invert(&self, height: u32) -> Length {
         match self {
             Length::Percent(percent) => Percent(100 - percent.0).into(),
-            Length::Px(px) => Px(height - px.0).into(),
+            Length::Px(px) => Px(height as f64 - px.0).into(),
             // TODO: need to walk the expr tree to invert all individual Lenght's
             Length::Expr(_) => panic!("cannot invert an expression yet "),
         }
@@ -67,7 +67,7 @@ impl Length {
 
 impl Default for Length {
     fn default() -> Self {
-        Self::Px(Px(0))
+        Self::Px(Px(0.))
     }
 }
 
@@ -105,7 +105,7 @@ impl From<Expr> for Length {
 
 impl From<u32> for Length {
     fn from(value: u32) -> Self {
-        Self::Px(Px(value))
+        Self::Px(Px(value.into()))
     }
 }
 
@@ -163,7 +163,12 @@ impl Visit for Percent {
 }
 
 #[derive(Clone, Copy, Debug)]
-pub struct Px(pub u32);
+pub struct Px(pub f64);
+impl<T: Num + Into<f64>> From<T> for Px {
+    fn from(value: T) -> Self {
+        Px(value.into())
+    }
+}
 
 impl Visit for Px {
     fn visit(&self, buffer: &mut Buffer) {

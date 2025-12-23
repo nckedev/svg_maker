@@ -80,6 +80,7 @@ pub enum Color {
     Red,
     Black,
     White,
+    CssName(String),
     Transparent,
     Rgb(u8, u8, u8),
     Rgba(u8, u8, u8, u8),
@@ -100,12 +101,13 @@ impl Visit for Color {
             Color::Red => "red",
             Color::Black => "black",
             Color::White => "white",
+            Color::CssName(name) => name,
             Color::Transparent => todo!(),
             Color::Rgb(r, g, b) => &format!("rgb({} {} {})", r, g, b),
             Color::Rgba(_, _, _, _) => todo!(),
             Color::Hex(_) => todo!(),
             Color::Oklch(l, c, h) => &format!("oklch({} {} {})", l, c, h),
-            Color::OklchAlpha(l, c, h, a) => &format!("oklch({} {} {} {})", l, c, h, a),
+            Color::OklchAlpha(l, c, h, a) => &format!("oklch({} {} {} / {})", l, c, h, a),
             Color::OklchFrom(_color, _, _, _, _) => todo!(),
             Color::CssVar(_) => todo!(),
             Color::CurrentColor => "currentColor",
@@ -121,8 +123,18 @@ impl Visit for Color {
     }
 }
 
+impl From<&str> for Color {
+    fn from(value: &str) -> Self {
+        match value {
+            x if x.starts_with("#") => Color::Hex(x.to_string()),
+            x if x.starts_with("--") => Color::CssVar(x.to_string()),
+            x => Color::CssName(x.to_string()),
+        }
+    }
+}
 pub struct Oklch<L, C> {
     lum: L,
     chroma: C,
     hue: u16,
+    alpha: Option<f32>,
 }

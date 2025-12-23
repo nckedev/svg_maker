@@ -2,7 +2,6 @@ use svg_maker::{
     Svg,
     color::Color,
     element::Element,
-    shapes::use_href::Use,
     style::LineCap,
     units::{Percent, Px},
 };
@@ -18,13 +17,13 @@ fn main() {
             "#,
         )
         .def(
-            Element::line(Px(1), 3, 49, Percent(30))
+            Element::line(Px(1.), 3, 49, Percent(30))
                 .id("new")
                 .stroke(Color::Red),
         )
-        .push(Use::make_element(1, 2).fill(Color::Black).href("test"))
+        .push(Element::use_href(1, 2).fill(Color::Black).href("test"))
         .push(
-            Element::line(Px(1) + Percent(2) + Px(3) + Px(2), Percent(5), 100, 100)
+            Element::line(Px(1.) + Percent(2) + Px(3.) + Px(2.), Percent(5), 100, 100)
                 .id("myid")
                 .stroke(Color::Black)
                 .stroke_width(Percent(50))
