@@ -5,7 +5,7 @@ use svg_maker_derive::*;
 use crate::{
     buffer::Buffer,
     element::Element,
-    marker_traits::{BaseElement, BaseStyle, ClosedShape, Hx, OpenEndedShape},
+    marker_traits::BaseElement,
     units::{Coord, Length},
     visit::Visit,
 };
@@ -59,7 +59,11 @@ impl Svg {
         self
     }
 
-    pub fn def(mut self, el: impl BaseElement + 'static) -> Self {
+    pub fn def<E, S>(mut self, el: E) -> Self
+    where
+        E: Into<Element<S>> + BaseElement,
+        S: Shape + Sized + Visit + 'static,
+    {
         debug_assert!(
             el.get_id().is_some(),
             "a definition is useless without an id"
@@ -69,8 +73,13 @@ impl Svg {
     }
 
     #[must_use]
-    pub fn push(mut self, el: impl BaseElement + 'static) -> Self {
-        self.children.push(Box::new(el));
+    pub fn push<E, S>(mut self, el: E) -> Self
+    where
+        E: Into<Element<S>> + BaseElement,
+        S: Shape + Sized + Visit + 'static,
+    {
+        let e: Element<S> = el.into();
+        self.children.push(Box::new(e));
         self
     }
 
@@ -168,112 +177,6 @@ pub(crate) struct Optimizations {
     pub(crate) remove_indent: bool,
 }
 
-// Line ===============================================
-
-#[derive(Default, BaseStyle, OpenEndedShape, Hx)]
-pub struct Line {
-    x1: Length,
-    y1: Length,
-    x2: Length,
-    y2: Length,
-}
-
-impl Line {
-    pub fn new(
-        x1: impl Into<Length>,
-        y1: impl Into<Length>,
-        x2: impl Into<Length>,
-        y2: impl Into<Length>,
-    ) -> Self {
-        Self {
-            x1: x1.into(),
-            y1: y1.into(),
-            x2: x2.into(),
-            y2: y2.into(),
-        }
-    }
-}
-impl Visit for Line {
-    fn visit(&self, buffer: &mut Buffer) {
-        buffer.push_tag("line");
-        buffer.push_attr("x1", &self.x1);
-        buffer.push_attr("y1", &self.y1);
-        buffer.push_attr("x2", &self.x2);
-        buffer.push_attr("y2", &self.y2);
-    }
-}
-
-impl Shape for Line {}
-
-// Path =============================================
-
-#[derive(BaseStyle)]
-pub struct Path {
-    pub path: Vec<Command>,
-}
-
-impl Path {
-    pub fn new() -> Self {
-        Self { path: vec![] }
-    }
-
-    pub(crate) fn push(&mut self, command: Command) {
-        self.path.push(command);
-    }
-
-    pub fn append(&mut self, commands: &mut Vec<Command>) -> &mut Self {
-        self.path.append(commands);
-        self
-    }
-
-    pub fn path_only(&mut self) -> &mut Self {
-        self
-    }
-}
-
-impl Shape for Path {}
-
-impl Default for Path {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl Visit for Path {
-    fn visit(&self, buffer: &mut Buffer) {
-        buffer.push_str("<path d=\"");
-        for command in &self.path {
-            command.visit(buffer);
-        }
-        buffer.push_str("\" ");
-    }
-}
-
-// Rect ==============================================
-
-#[derive(Default, BaseStyle, ClosedShape)]
-pub struct Rect {
-    x: Length,
-    y: Length,
-    width: Length,
-    height: Length,
-    rx: Option<Length>,
-    ry: Option<Length>,
-    // TODO:
-    //pathLenght
-}
-
-impl Visit for Rect {
-    fn visit(&self, buffer: &mut Buffer) {
-        buffer.push_tag("rect");
-        buffer.push_attr("x", &self.x);
-        buffer.push_attr("y", &self.y);
-        buffer.push_attr("width", &self.width);
-        buffer.push_attr("height", &self.height);
-        buffer.push_attr_opt("rx", &self.rx);
-        buffer.push_attr_opt("ry", &self.ry);
-    }
-}
 // Raw ======================================
 
 #[derive(BaseStyle)]
@@ -287,44 +190,11 @@ impl Visit for Raw {
     }
 }
 
-pub enum Command {
-    MoveTo(Coord),
-    MoveToRelative(Coord),
-    Line(Coord),
-    LineRelative(Coord),
-    VerticalLine(u16),
-    VerticalLineRelative(u16),
-    HorizontalLine(u16),
-    HorizontalLineRelative(u16),
-    Raw(String),
-    ClosePath,
-}
-
-impl Visit for Command {
-    fn visit(&self, buffer: &mut Buffer) {
-        let str = match self {
-            Command::MoveTo(coord) => format!("M{},{} ", coord.0, coord.1),
-            Command::MoveToRelative(coord) => format!("m{},{} ", coord.0, coord.1),
-            Command::Line(coord) => format!("L{},{} ", coord.0, coord.1),
-            Command::LineRelative(coord) => format!("l{},{} ", coord.0, coord.1),
-            Command::VerticalLine(y) => format!("V{} ", y),
-            Command::VerticalLineRelative(dy) => format!("v{} ", dy),
-            Command::HorizontalLine(x) => format!("H{} ", x),
-            Command::HorizontalLineRelative(dx) => format!("h{} ", dx),
-            // TODO: check the end of s and add a space.
-            Command::Raw(s) => s.to_string(),
-            Command::ClosePath => "Z ".to_string(),
-        };
-        buffer.push_str(&str);
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::{
         color::Color,
-        element::ElementBuilder,
-        style::LineCap,
+        shapes::{line::Line, path::Path},
         units::{Percent, Px},
     };
 
@@ -332,25 +202,17 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let mut s = Svg::new()
-            .size(100, 100)
-            .push(
-                Path::new()
-                    .into_element()
-                    .class("testing")
-                    .class("testing22")
-                    .transform(element::Transform::Scale(2, 2))
-                    // .push(Command::MoveTo(Coord(10, 10)))
-                    .move_to(10, 9)
-                    .stroke(Color::Red)
-                    .fill(Color::Black),
-            )
-            .push(
-                ElementBuilder::line(Px(1) + Percent(2) + Px(3) + 4, Percent(5), 6, 7)
-                    .id("myid")
-                    .stroke_linecap(LineCap::Butt)
-                    .fill(Color::Red),
-            );
+        let mut s = Svg::new().size(100, 100).push(
+            Path::new()
+                .into_element()
+                .class("testing")
+                .class("testing22")
+                .transform(element::Transform::Scale(2, 2))
+                // .push(Command::MoveTo(Coord(10, 10)))
+                .move_to(10, 9)
+                .stroke(Color::Red)
+                .fill(Color::Black),
+        );
         // .push(ElementBuilder::raw("testing"));
         let _ = s.render();
         let x = s.get_element_by_id::<Line>("myid");

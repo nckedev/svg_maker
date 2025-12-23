@@ -2,7 +2,7 @@ use svg_maker_derive::{BaseStyle, Hx, Shape};
 
 use crate::{
     buffer::Buffer,
-    marker_traits::{BaseStyle, Hx, Shape},
+    element::Element,
     units::{Length, XCoord, YCoord},
     visit::Visit,
 };
@@ -17,35 +17,18 @@ pub struct Use {
 }
 
 impl Use {
-    pub fn new(x: impl Into<XCoord>, y: impl Into<YCoord>) -> Self {
-        Self {
+    pub fn make_element(x: impl Into<XCoord>, y: impl Into<YCoord>) -> Element<Self> {
+        let s = Self {
             x: x.into(),
             y: y.into(),
             ..Default::default()
-        }
+        };
+        Element::new(s)
     }
-
-    pub fn x<T: Into<XCoord>>(&mut self, x: T) -> &mut Self {
-        self.x = x.into();
-        self
-    }
-
-    pub fn y<T: Into<YCoord>>(&mut self, y: T) -> &mut Self {
-        self.y = y.into();
-        self
-    }
-
-    pub fn height<H: Into<Length>>(&mut self, height: H) -> &mut Self {
-        self.height = height.into();
-        self
-    }
-
-    pub fn width<H: Into<Length>>(&mut self, width: H) -> &mut Self {
-        self.width = width.into();
-        self
-    }
-
-    pub fn href(&mut self, target: &str) -> &mut Self {
+}
+impl Element<Use> {
+    #[must_use]
+    pub fn href(mut self, target: &str) -> Self {
         if target.starts_with('#') {
             self.href = target.to_string();
         } else {
@@ -53,11 +36,36 @@ impl Use {
         }
         self
     }
+
+    #[must_use]
+    pub fn x<T: Into<XCoord>>(mut self, x: T) -> Self {
+        self.x = x.into();
+        self
+    }
+
+    #[must_use]
+    pub fn y<T: Into<YCoord>>(mut self, y: T) -> Self {
+        self.y = y.into();
+        self
+    }
+
+    #[must_use]
+    pub fn height<H: Into<Length>>(mut self, height: H) -> Self {
+        self.height = height.into();
+        self
+    }
+
+    #[must_use]
+    pub fn width<H: Into<Length>>(mut self, width: H) -> Self {
+        self.width = width.into();
+        self
+    }
 }
 
 impl Visit for Use {
     fn visit(&self, buffer: &mut Buffer) {
         debug_assert!(!self.href.is_empty(), "Use without a href is useless");
+
         if self.href.is_empty() {
             return;
         }

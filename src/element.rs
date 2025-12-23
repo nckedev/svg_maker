@@ -4,38 +4,14 @@ use std::{
 };
 
 use crate::{
-    BaseStyle, Command, Line, Path, Raw, Shape,
+    Shape,
     buffer::Buffer,
     color::Color,
-    marker_traits::{BaseElement, Hx, OpenEndedShape},
+    marker_traits::{BaseElement, BaseStyle, Hx, OpenEndedShape},
     style::{LineCap, Style},
-    units::{Coord, Length, XCoord, YCoord},
+    units::Length,
     visit::Visit,
 };
-
-pub struct ElementBuilder;
-impl ElementBuilder {
-    pub fn path() -> Element<Path> {
-        // ElementBuilder::bootstrap(Path::new())
-        Element::new(Path::new())
-    }
-
-    pub fn line(
-        x1: impl Into<Length>,
-        x2: impl Into<Length>,
-        y1: impl Into<Length>,
-        y2: impl Into<Length>,
-    ) -> Element<Line> {
-        Element::new(Line::new(x1, x2, y1, y2))
-    }
-    // pub fn line_from_coord(start: Coord, end: Coord) -> Element<Line> {}
-    //
-    pub fn raw(str: &str) -> Element<Raw> {
-        Element::new(Raw {
-            inner: str.to_string(),
-        })
-    }
-}
 
 pub struct Element<T: Sized> {
     pub id: Option<String>,
@@ -45,7 +21,7 @@ pub struct Element<T: Sized> {
     pub(crate) style: Style,
     transforms: Option<Vec<Transform>>,
     hx: Option<HxData>,
-    kind: T,
+    pub(crate) kind: T,
 }
 
 impl<T: Shape + Visit> From<T> for Element<T> {
@@ -72,40 +48,6 @@ impl<T: Visit + 'static> BaseElement for Element<T> {
         S: Sized + Visit + crate::marker_traits::Shape,
     {
         Element::from(shape)
-    }
-}
-
-impl Element<Path> {
-    pub fn push(mut self, command: Command) -> Self {
-        self.kind.push(command);
-        self
-    }
-
-    pub fn push_commands(mut self, commands: &mut Vec<Command>) -> Self {
-        self.kind.append(commands);
-        self
-    }
-
-    pub fn move_to(mut self, x: impl Into<XCoord>, y: impl Into<YCoord>) -> Self {
-        self.kind.push(Command::MoveTo(Coord(x.into(), y.into())));
-        self
-    }
-
-    pub fn move_to_relative(mut self, x: impl Into<XCoord>, y: impl Into<YCoord>) -> Self {
-        self.kind
-            .push(Command::MoveToRelative(Coord(x.into(), y.into())));
-        self
-    }
-
-    pub fn line(mut self, x: impl Into<XCoord>, y: impl Into<YCoord>) -> Self {
-        self.kind.push(Command::Line(Coord(x.into(), y.into())));
-        self
-    }
-
-    pub fn line_relative(mut self, x: impl Into<XCoord>, y: impl Into<YCoord>) -> Self {
-        self.kind
-            .push(Command::LineRelative(Coord(x.into(), y.into())));
-        self
     }
 }
 
@@ -147,14 +89,6 @@ impl<T: Visit> Element<T> {
             hx: None,
             kind,
         }
-    }
-
-    pub fn inner(&self) -> &T {
-        &self.kind
-    }
-
-    pub fn inner_mut(&mut self) -> &mut T {
-        &mut self.kind
     }
 
     pub fn class(mut self, class: &str) -> Self {

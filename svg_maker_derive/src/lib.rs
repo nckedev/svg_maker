@@ -8,7 +8,7 @@ pub fn derive_text_element(tokens: TokenStream) -> TokenStream {
     let ident = ast.ident;
 
     quote! {
-        impl TextElement for #ident {}
+        impl crate::marker_traits::TextElement for #ident {}
     }
     .into()
 }
@@ -19,7 +19,7 @@ pub fn derive_base_style(tokens: TokenStream) -> TokenStream {
     let ident = ast.ident;
 
     quote! {
-        impl BaseStyle for #ident {}
+        impl crate::marker_traits::BaseStyle for #ident {}
     }
     .into()
 }
@@ -30,7 +30,8 @@ pub fn derive_closed_shape(tokens: TokenStream) -> TokenStream {
     let ident = ast.ident;
 
     quote! {
-        impl ClosedShape for #ident {}
+        impl crate::marker_traits::ClosedShape for #ident {}
+        impl crate::marker_traits::Shape for #ident {}
     }
     .into()
 }
@@ -41,7 +42,8 @@ pub fn derive_open_shape(tokens: TokenStream) -> TokenStream {
     let ident = ast.ident;
 
     quote! {
-        impl OpenEndedShape for #ident {}
+        impl crate::marker_traits::OpenEndedShape for #ident {}
+        impl crate::marker_traits::Shape for #ident {}
     }
     .into()
 }
@@ -52,7 +54,7 @@ pub fn derive_base_element(tokens: TokenStream) -> TokenStream {
     let ident = ast.ident;
 
     quote! {
-        impl BaseElement for #ident {}
+        impl crate::marker_traits::BaseElement for #ident {}
     }
     .into()
 }
@@ -63,7 +65,7 @@ pub fn derive_animate(tokens: TokenStream) -> TokenStream {
     let ident = ast.ident;
 
     quote! {
-        impl Animate for #ident {}
+        impl crate::marker_traits::BaseStyleAnimate for #ident {}
     }
     .into()
 }
@@ -74,7 +76,7 @@ pub fn derive_hx(tokens: TokenStream) -> TokenStream {
     let ident = ast.ident;
 
     quote! {
-        impl Hx for #ident {}
+        impl crate::marker_traits::Hx for #ident {}
     }
     .into()
 }
@@ -85,7 +87,7 @@ pub fn derive_shape(tokens: TokenStream) -> TokenStream {
     let ident = ast.ident;
 
     quote! {
-        impl Shape for #ident {}
+        impl crate::marker_traits::Shape for #ident {}
     }
     .into()
 }
