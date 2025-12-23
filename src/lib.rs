@@ -2,13 +2,7 @@ use std::{error::Error, fs::File, io::Write};
 
 use svg_maker_derive::*;
 
-use crate::{
-    buffer::Buffer,
-    element::Element,
-    marker_traits::BaseElement,
-    units::{Coord, Length},
-    visit::Visit,
-};
+use crate::{buffer::Buffer, element::Element, marker_traits::BaseElement, visit::Visit};
 
 pub use crate::marker_traits::Shape;
 
@@ -59,6 +53,10 @@ impl Svg {
         self
     }
 
+    pub fn symbol(mut self) -> Self {
+        self
+    }
+
     pub fn def<E, S>(mut self, el: E) -> Self
     where
         E: Into<Element<S>> + BaseElement,
@@ -94,6 +92,12 @@ impl Svg {
         buffer.push_attr("version", &self.version);
         buffer.push_attr("xmlns", &self.namespace);
         buffer.push_tag_end();
+        if let Some(css) = &self.css {
+            buffer.push_tag("style");
+            buffer.push_tag_end();
+            buffer.push_str(css);
+            buffer.push_tag_close("style");
+        }
         if !self.defs.is_empty() {
             buffer.push_tag("defs");
             buffer.push_tag_end();

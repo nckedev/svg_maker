@@ -10,6 +10,13 @@ use svg_maker::{
 fn main() {
     let s = Svg::new()
         .size(100, 100)
+        .css(
+            r#"
+            path {
+                fill: black; 
+            } 
+            "#,
+        )
         .def(
             Element::line(Px(1), 3, 49, Percent(30))
                 .id("new")
