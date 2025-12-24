@@ -103,11 +103,9 @@ impl Default for Path {
 
 impl Visit for Path {
     fn visit(&self, buffer: &mut Buffer) {
-        buffer.push_str("<path d=\"");
-        for command in &self.path {
-            command.visit(buffer);
-        }
-        buffer.push_str("\" ");
+        buffer.push_tag("path");
+        buffer.push_attr("d", &self.path);
+        buffer.push_tag_self_close();
     }
 }
 
@@ -146,20 +144,19 @@ pub enum Command {
 
 impl Visit for Command {
     fn visit(&self, buffer: &mut Buffer) {
-        let str = match self {
-            Command::MoveTo(coord) => format!("M{},{} ", coord.0, coord.1),
-            Command::MoveToRelative(coord) => format!("m{},{} ", coord.0, coord.1),
-            Command::Line(coord) => format!("L{},{} ", coord.0, coord.1),
-            Command::LineRelative(coord) => format!("l{},{} ", coord.0, coord.1),
-            Command::VerticalLine(y) => format!("V{} ", y.0),
-            Command::VerticalLineRelative(dy) => format!("v{} ", dy.0),
-            Command::HorizontalLine(x) => format!("H{} ", x.0),
-            Command::HorizontalLineRelative(dx) => format!("h{} ", dx.0),
+        match self {
+            Command::MoveTo(coord) => coord.visit_prefix(buffer, "M"),
+            Command::MoveToRelative(coord) => coord.visit_prefix(buffer, "m"),
+            Command::Line(coord) => coord.visit_prefix(buffer, "L"),
+            Command::LineRelative(coord) => coord.visit_prefix(buffer, "l"),
+            Command::VerticalLine(y) => y.visit_prefix(buffer, "V"),
+            Command::VerticalLineRelative(dy) => dy.visit_prefix(buffer, "v"),
+            Command::HorizontalLine(x) => x.visit_prefix(buffer, "H"),
+            Command::HorizontalLineRelative(dx) => dx.visit_prefix(buffer, "h"),
             // TODO: check the end of s and add a space.
-            Command::Raw(s) => s.clone(),
-            Command::ClosePath => "Z ".to_string(),
+            Command::Raw(s) => buffer.push_str(s),
+            Command::ClosePath => buffer.push_str("Z"),
             _ => todo!("not implemented yet"),
         };
-        buffer.push_str(&str);
     }
 }

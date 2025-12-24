@@ -5,6 +5,20 @@ use crate::buffer::Buffer;
 /// types u32, f32, etc,
 pub trait Visit {
     fn visit(&self, buffer: &mut Buffer);
+    fn visit_extra(&self, buffer: &mut Buffer, prefix: &str, suffix: &str) {
+        buffer.push_str(prefix);
+        self.visit(buffer);
+        buffer.push_str(suffix);
+    }
+    fn visit_prefix(&self, buffer: &mut Buffer, prefix: &str) {
+        buffer.push_str(prefix);
+        self.visit(buffer);
+    }
+
+    fn vist_suffix(&self, buffer: &mut Buffer, suffix: &str) {
+        self.visit(buffer);
+        buffer.push_str(suffix);
+    }
 }
 
 impl Visit for String {
@@ -21,8 +35,12 @@ impl Visit for &str {
 
 impl<T: Visit> Visit for Vec<T> {
     fn visit(&self, buffer: &mut Buffer) {
-        for x in self {
-            x.visit(buffer);
+        for (i, x) in self.iter().enumerate() {
+            if i == self.len().saturating_sub(1) {
+                x.visit(buffer);
+            } else {
+                x.vist_suffix(buffer, " ");
+            }
         }
     }
 }

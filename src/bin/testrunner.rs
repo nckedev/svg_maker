@@ -24,6 +24,7 @@ fn main() {
                 .stroke(Color::Red),
         )
         .push(Element::use_href(1, 2).fill(Color::Black).href("test"))
+        .push(Element::path().move_to(1, 10).line_path(10, 90))
         .push(
             Element::line(Px(1.) + Percent(2) + Px(3.) + Px(2.), Percent(5), 100, 100)
                 .id("myid")

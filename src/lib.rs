@@ -6,6 +6,7 @@ use crate::{buffer::Buffer, element::Element, marker_traits::BaseElement, visit:
 
 pub use crate::marker_traits::Shape;
 
+pub mod animations;
 mod buffer;
 pub mod color;
 pub mod element;

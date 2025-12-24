@@ -11,6 +11,14 @@ use crate::{buffer::Buffer, visit::Visit};
 
 pub struct Coord(pub XCoord, pub YCoord);
 
+impl Visit for Coord {
+    fn visit(&self, buffer: &mut Buffer) {
+        self.0.visit(buffer);
+        buffer.push_str(",");
+        self.1.visit(buffer);
+    }
+}
+
 #[derive(Display, Debug, Default)]
 pub struct XCoord(pub f64);
 
