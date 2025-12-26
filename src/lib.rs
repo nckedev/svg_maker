@@ -83,12 +83,29 @@ impl Svg {
     }
 
     #[must_use]
+    pub fn push_vec<E, S>(mut self, el: Vec<E>) -> Self
+    where
+        E: Into<Element<S>> + BaseElement,
+        S: Shape + Sized + Visit + 'static,
+    {
+        for e in el {
+            let e: Element<S> = e.into();
+            self.children.push(Box::new(e));
+        }
+        self
+    }
+
+    #[must_use]
     pub fn render(&self) -> String {
         let mut buffer = Buffer::with_capacity(100);
         buffer.opts.optimizations.remove_unit_for_px = true;
         buffer.push_tag("svg");
-        buffer.push_attr("width", &self.w);
-        buffer.push_attr("height", &self.h);
+        if self.w > 0 {
+            buffer.push_attr("width", &self.w);
+        }
+        if self.h > 0 {
+            buffer.push_attr("height", &self.h);
+        }
         buffer.push_attr_opt("viewbox", &self.viewbox);
         buffer.push_attr("version", &self.version);
         buffer.push_attr("xmlns", &self.namespace);
@@ -111,13 +128,38 @@ impl Svg {
             element.visit(&mut buffer);
         }
         buffer.push_tag_close("svg");
-        eprintln!(" buffer:\n {}", buffer.str());
         buffer.str().to_string()
     }
 
     pub fn render_to_file(&self, path: &str) -> Result<(), Box<dyn Error>> {
         let mut f = File::create(path)?;
         f.write_all(self.render().as_bytes())?;
+        Ok(())
+    }
+
+    pub fn debug(&self, refresh_sec: u32) -> Result<(), Box<dyn Error>> {
+        let mut f = File::create("test.html")?;
+        let meta = if refresh_sec > 0 {
+            format!(r#"<meta http-equiv="refresh" content="{}" />"#, refresh_sec)
+        } else {
+            "".to_string()
+        };
+        let buf = format!(
+            r#"
+        <html>
+  <head>
+    <title>SVG MAKER DEBUG</title>
+    {}
+  </head>
+  <body>
+{}
+  </body>
+</html>
+        "#,
+            meta,
+            self.render()
+        );
+        f.write_all(buf.as_bytes())?;
         Ok(())
     }
 
@@ -137,8 +179,8 @@ impl Svg {
 impl Default for Svg {
     fn default() -> Self {
         Self {
-            w: 100,
-            h: 100,
+            w: 0,
+            h: 0,
             version: "1.1".to_string(),
             namespace: "http://www.w3.org/2000/svg".to_string(),
             viewbox: Some(Viewbox {

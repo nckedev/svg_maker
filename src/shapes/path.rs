@@ -105,7 +105,6 @@ impl Visit for Path {
     fn visit(&self, buffer: &mut Buffer) {
         buffer.push_tag("path");
         buffer.push_attr("d", &self.path);
-        buffer.push_tag_self_close();
     }
 }
 

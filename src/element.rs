@@ -8,7 +8,7 @@ use crate::{
     buffer::Buffer,
     color::Color,
     marker_traits::{BaseElement, BaseStyle, Hx, OpenEndedShape},
-    style::{LineCap, Style},
+    style::{FillRule, LineCap, LineJoin, Style},
     units::Length,
     visit::Visit,
 };
@@ -133,13 +133,48 @@ impl<T: BaseStyle> Element<T> {
         self
     }
 
+    pub fn fill_opacity(mut self, opacity: f32) -> Self {
+        self.style.fill_opacity = Some(opacity);
+        self
+    }
+
+    pub fn fill_rule(mut self, rule: FillRule) -> Self {
+        self.style.fill_rule = Some(rule);
+        self
+    }
+
     pub fn stroke(mut self, color: Color) -> Self {
         self.style.stroke = Some(color);
         self
     }
 
+    pub fn stroke_linejoin(mut self, join: LineJoin) -> Self {
+        self.style.stroke_linejoin = Some(join);
+        self
+    }
+
     pub fn stroke_width(mut self, width: impl Into<Length>) -> Self {
         self.style.stroke_width = Some(width.into());
+        self
+    }
+
+    pub fn stroke_dasharray(mut self, array: Vec<impl Into<Length>>) -> Self {
+        todo!();
+        self
+    }
+
+    pub fn stroke_dashoffset(mut self, length: impl Into<Length>) -> Self {
+        self.style.stroke_dashoffset = Some(length.into());
+        self
+    }
+
+    pub fn stroke_opacity(mut self, opacity: f32) -> Self {
+        self.style.stroke_opacity = Some(opacity);
+        self
+    }
+
+    pub fn stroke_miterlimit(mut self, limit: f32) -> Self {
+        self.style.stroke_miterlimit = Some(limit);
         self
     }
 }

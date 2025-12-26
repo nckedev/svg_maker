@@ -12,7 +12,7 @@ pub struct Style {
 
     pub stroke_linecap: Option<LineCap>,
     pub stroke_linejoin: Option<LineJoin>,
-    pub stroke_miterlimit: Option<u32>,
+    pub stroke_miterlimit: Option<f32>,
     pub stroke_opacity: Option<f32>,
 
     pub stroke_width: Option<Length>,
@@ -34,9 +34,9 @@ impl Visit for Style {
         // do nothing if there is no styling option set.
         if let Style {
             fill: None,
-            stroke: None,
             fill_opacity: None,
             fill_rule: None,
+            stroke: None,
             stroke_dasharray: None,
             stroke_dashoffset: None,
             stroke_linecap: None,
@@ -52,10 +52,16 @@ impl Visit for Style {
         buffer.push_str(r##" style=""##);
 
         visit_if_not_none!(fill, "fill");
-        visit_if_not_none!(stroke, "stroke");
         visit_if_not_none!(fill_opacity, "fill-opacity");
         visit_if_not_none!(fill_rule, "fill-rule");
+        visit_if_not_none!(stroke, "stroke");
         visit_if_not_none!(stroke_width, "stroke-width");
+        visit_if_not_none!(stroke_linejoin, "stroke-linejoin");
+        visit_if_not_none!(stroke_dasharray, "stroke-dasharray");
+        visit_if_not_none!(stroke_dashoffset, "stroke-dashoffset");
+        visit_if_not_none!(stroke_linecap, "stroke-linecap");
+        visit_if_not_none!(stroke_miterlimit, "stroke-miterlimit");
+        visit_if_not_none!(stroke_opacity, "stroke_opacity");
 
         buffer.push_str(r##"" "##);
     }
