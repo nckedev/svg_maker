@@ -93,6 +93,24 @@ impl Element<Path> {
         self.path.push(Command::HorizontalLineRelative(x.into()));
         self
     }
+
+    pub fn cubic_bezier<P>(mut self, p1: P, p2: P, p: P) -> Self
+    where
+        P: Into<Coord>,
+    {
+        self.path
+            .push(Command::CubicBezier(p1.into(), p2.into(), p.into()));
+        self
+    }
+
+    pub fn cubic_bezier_relative<P>(mut self, p1: P, p2: P, p: P) -> Self
+    where
+        P: Into<Coord>,
+    {
+        self.path
+            .push(Command::CubicBezierRelative(p1.into(), p2.into(), p.into()));
+        self
+    }
 }
 
 impl Default for Path {
@@ -119,8 +137,8 @@ pub enum Command {
     HorizontalLineRelative(XCoord),
     //C x1 y1 x2 y2 x y
     //c dx1 dy1 dx2 dy2 dx dy
-    CubicBezier,
-    CubicBezierRelative,
+    CubicBezier(Coord, Coord, Coord),
+    CubicBezierRelative(Coord, Coord, Coord),
     //S x y
     //s dx dy
     CubicBezierExtended,
@@ -152,6 +170,16 @@ impl Visit for Command {
             Command::VerticalLineRelative(dy) => dy.visit_prefix(buffer, "v"),
             Command::HorizontalLine(x) => x.visit_prefix(buffer, "H"),
             Command::HorizontalLineRelative(dx) => dx.visit_prefix(buffer, "h"),
+            Command::CubicBezier(p1, p2, end) => {
+                p1.visit_extra(buffer, "C", ",");
+                p2.vist_suffix(buffer, ",");
+                end.visit(buffer);
+            }
+            Command::CubicBezierRelative(p1, p2, end) => {
+                p1.visit_extra(buffer, "c", ",");
+                p2.vist_suffix(buffer, ",");
+                end.visit(buffer);
+            }
             // TODO: check the end of s and add a space.
             Command::Raw(s) => buffer.push_str(s),
             Command::ClosePath => buffer.push_str("Z"),

@@ -2,26 +2,67 @@
         <html>
   <head>
     <title>SVG MAKER DEBUG</title>
-    
+    <meta http-equiv="refresh" content="1" />
   </head>
-  <body>
-<svg viewbox="0 0 400 400" version="2" xmlns="http://www.w3.org/2000/svg" >
+  <body style="background:black;">
+    <svg viewbox="0 0 400 400" version="2" xmlns="http://www.w3.org/2000/svg" >
 	<style >
 
+        :root {
+            --primary_hue: 0;
+            --secondary_hue: 24;
+            --stroke_hue: 0;
+            --lightness: 50%;
+            --chroma: 0.2;
+            --primary: oklch(var(--lightness) var(--chroma) var(--primary_hue));
+            --secondary: oklch(var(--lightness) var(--chroma) var(--secondary_hue));
+            --stroke: oklch(100% 0 0);
+            --black: oklch(40% 0.13 80);
+        }
         path.hover {
-            fill: black;
+            fill: var(--primary);
+            stroke: var(--stroke);
             transition: fill 0.3s ease-in-out;
         }
         path.hover:hover {
-            fill: red;
+            fill: var(--secondary);
         }
     	</style>
-	<path d="M25,400 v-100 h50 v100" class="hover"  style=" stroke: red; stroke-width: 2; stroke-linejoin: round;" />
-	<path d="M101,400 v-200 h50 v200" class="hover"  style=" stroke: red; stroke-width: 2; stroke-linejoin: round;" />
-	<path d="M177,400 v-130 h50 v130" class="hover"  style=" stroke: red; stroke-width: 2; stroke-linejoin: round;" />
-	<path d="M253,400 v-400 h50 v400" class="hover"  style=" stroke: red; stroke-width: 2; stroke-linejoin: round;" />
+	<path d="M25,400 v-80 c0,-20,0,-20,20,-20 h10 c20,0,20,0,20,20 v80" class="hover"  style=" stroke-width: 2; stroke-linejoin: round;" />
+	<path d="M101,400 v-180 c0,-20,0,-20,20,-20 h10 c20,0,20,0,20,20 v180" class="hover"  style=" stroke-width: 2; stroke-linejoin: round;" />
+	<path d="M177,400 v-110 c0,-20,0,-20,20,-20 h10 c20,0,20,0,20,20 v110" class="hover"  style=" stroke-width: 2; stroke-linejoin: round;" />
+	<path d="M253,400 v-330 c0,-20,0,-20,20,-20 h10 c20,0,20,0,20,20 v330" class="hover"  style=" stroke-width: 2; stroke-linejoin: round;" />
 </svg>
 
+    <div>
+        <input type="range" min="0" max="100" id="slider_l" />
+        <label for="slider_l">Lightness</label>
+        <input type="range" min="0" max="360" id="slider_c" />
+        <label for="slider_c">Chroma</label>
+        <input type="range" min="0" max="360" id="slider_primary_h" />
+        <label for="slider_primary_h">Primary</label>
+        <input type="range" min="0" max="360" id="slider_secondary_h" />
+        <label for="slider_secondary_h">Secodnary</label>
+        <input type="range" min="0" max="360" id="slider_stroke_h" />
+        <label for="slider_stroke_h">Stroke</label>
+    </div>
+    <script>
+
+        function create_slider(name, target, f) {
+            const slider = document.getElementById(name);
+            const root = document.documentElement;
+            slider.addEventListener("input", (e) => {
+                const r = f !== null ? f(e.target.value) : e.target.value;
+                root.style.setProperty(target, r);
+            });
+        }
+
+        create_slider("slider_l", "--lightness", (v) => { return v + "%"; } );
+        create_slider("slider_c", "--chroma", (v) => { return v / 1000});
+        create_slider("slider_primary_h", "--primary_hue", null);
+        create_slider("slider_secondary_h", "--secondary_hue", null);
+        create_slider("slider_stroke_h", "--stroke_hue", null);
+    </script>
   </body>
 </html>
         

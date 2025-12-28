@@ -158,8 +158,13 @@ impl<T: BaseStyle> Element<T> {
         self
     }
 
-    pub fn stroke_dasharray(mut self, array: Vec<impl Into<Length>>) -> Self {
-        todo!();
+    pub fn stroke_dasharray<C, L>(mut self, array: C) -> Self
+    where
+        C: IntoIterator<Item = L>,
+        L: Into<Length>,
+    {
+        let arr = array.into_iter().map(|e| e.into()).collect::<Vec<Length>>();
+        self.style.stroke_dasharray = Some(arr);
         self
     }
 

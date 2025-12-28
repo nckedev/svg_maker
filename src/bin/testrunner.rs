@@ -51,11 +51,28 @@ fn main() {
     //         .fill(Color::Red),
     // );
 
-    let v = [100, 200, 130, 400];
-    let _ = barchart(&v).debug(0);
+    let v = [100, 200, 130, 350];
+    println!("{}", barchart(&v, BarChartOpts::default()).render());
+    let _ = barchart(&v, BarChartOpts::default()).debug(1);
 }
 
-fn barchart(values: &[i32]) -> Svg {
+struct BarChartOpts {
+    corner_radius_y: u32,
+    corner_radius_x: u32,
+    outline: bool,
+}
+
+impl Default for BarChartOpts {
+    fn default() -> Self {
+        Self {
+            corner_radius_y: 20,
+            corner_radius_x: 10,
+            outline: true,
+        }
+    }
+}
+
+fn barchart(values: &[i32], opts: BarChartOpts) -> Svg {
     let len = values.len();
     const SIZE: u32 = 400;
     let max_bar_width = 100;
@@ -63,28 +80,43 @@ fn barchart(values: &[i32]) -> Svg {
     let mut s = Svg::new();
     let mut paths = vec![];
     for (i, v) in values.iter().enumerate() {
+        let start = (i as f64 + 25.) + (i as f64 * 75.);
+        let height = v - 20;
         let p = Path::new()
             .into_element()
             .class("hover")
-            .stroke(Color::Red)
             .stroke_width(2)
-            .stroke_dasharray(vec![Percent(9), 3])
+            // .stroke_dasharray(&[Percent(9), 2])
             .stroke_linejoin(LineJoin::Round)
-            .move_to((i as f64 + 25.) + (i * 75) as f64, 400)
-            .vertical_line_relative(-1 * v)
-            .horizontal_line_relative(50)
-            .vertical_line_relative(*v as u32);
+            .move_to(start, 400)
+            .vertical_line_relative(-1 * height)
+            .cubic_bezier_relative((0, -20), (0, -20), (20, -20))
+            .horizontal_line_relative(10)
+            .cubic_bezier_relative((20, 0), (20, 0), (20, 20))
+            .vertical_line_relative(height as u32);
 
         paths.push(p);
     }
     s.css(
         r#"
+        :root {
+            --primary_hue: 0;
+            --secondary_hue: 24;
+            --stroke_hue: 0;
+            --lightness: 50%;
+            --chroma: 0.2;
+            --primary: oklch(var(--lightness) var(--chroma) var(--primary_hue));
+            --secondary: oklch(var(--lightness) var(--chroma) var(--secondary_hue));
+            --stroke: oklch(100% 0 0);
+            --black: oklch(40% 0.13 80);
+        }
         path.hover {
-            fill: black;
+            fill: var(--primary);
+            stroke: var(--stroke);
             transition: fill 0.3s ease-in-out;
         }
         path.hover:hover {
-            fill: red;
+            fill: var(--secondary);
         }
     "#,
     )

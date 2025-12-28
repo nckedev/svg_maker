@@ -145,18 +145,46 @@ impl Svg {
             "".to_string()
         };
         let buf = format!(
-            r#"
+            r##"
         <html>
   <head>
     <title>SVG MAKER DEBUG</title>
-    {}
+    {meta}
   </head>
-  <body>
-{}
+  <body style="background:black;">
+    {}
+    <div>
+        <input type="range" min="0" max="100" id="slider_l" />
+        <label for="slider_l">Lightness</label>
+        <input type="range" min="0" max="360" id="slider_c" />
+        <label for="slider_c">Chroma</label>
+        <input type="range" min="0" max="360" id="slider_primary_h" />
+        <label for="slider_primary_h">Primary</label>
+        <input type="range" min="0" max="360" id="slider_secondary_h" />
+        <label for="slider_secondary_h">Secodnary</label>
+        <input type="range" min="0" max="360" id="slider_stroke_h" />
+        <label for="slider_stroke_h">Stroke</label>
+    </div>
+    <script>
+
+        function create_slider(name, target, f) {{
+            const slider = document.getElementById(name);
+            const root = document.documentElement;
+            slider.addEventListener("input", (e) => {{
+                const r = f !== null ? f(e.target.value) : e.target.value;
+                root.style.setProperty(target, r);
+            }});
+        }}
+
+        create_slider("slider_l", "--lightness", (v) => {{ return v + "%"; }} );
+        create_slider("slider_c", "--chroma", (v) => {{ return v / 1000}});
+        create_slider("slider_primary_h", "--primary_hue", null);
+        create_slider("slider_secondary_h", "--secondary_hue", null);
+        create_slider("slider_stroke_h", "--stroke_hue", null);
+    </script>
   </body>
 </html>
-        "#,
-            meta,
+        "##,
             self.render()
         );
         f.write_all(buf.as_bytes())?;

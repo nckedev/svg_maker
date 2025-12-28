@@ -19,6 +19,16 @@ impl Visit for Coord {
     }
 }
 
+impl<T, U> From<(T, U)> for Coord
+where
+    T: Num + Into<XCoord>,
+    U: Num + Into<YCoord>,
+{
+    fn from(value: (T, U)) -> Self {
+        Coord(value.0.into(), value.1.into())
+    }
+}
+
 #[derive(Display, Debug, Default)]
 pub struct XCoord(pub f64);
 
@@ -55,7 +65,7 @@ impl Visit for YCoord {
 }
 
 // NOTE: the struct needs to have the same name as the enum varuant for the macro to work
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Length {
     Percent(Percent),
     Px(Px),
@@ -69,6 +79,14 @@ impl Length {
             Length::Px(px) => Px(height as f64 - px.0).into(),
             // TODO: need to walk the expr tree to invert all individual Lenght's
             Length::Expr(_) => panic!("cannot invert an expression yet "),
+        }
+    }
+
+    pub fn is_zero(&self) -> bool {
+        match self {
+            Length::Percent(percent) => percent.0 == 0,
+            Length::Px(px) => px.0 == 0,
+            Length::Expr(expr) => false,
         }
     }
 }
@@ -160,7 +178,7 @@ impl<T: Into<Length>> Add<T> for Length {
     }
 }
 
-#[derive(Display, Debug)]
+#[derive(Display, Debug, Clone, Copy)]
 pub struct Percent(pub u32);
 
 impl Visit for Percent {
@@ -187,7 +205,7 @@ impl Visit for Px {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Expr {
     lhs: Rc<Length>,
     op: Option<String>,

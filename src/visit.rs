@@ -36,10 +36,10 @@ impl Visit for &str {
 impl<T: Visit> Visit for Vec<T> {
     fn visit(&self, buffer: &mut Buffer) {
         for (i, x) in self.iter().enumerate() {
-            if i == self.len().saturating_sub(1) {
-                x.visit(buffer);
-            } else {
+            if i < self.len().saturating_sub(1) {
                 x.vist_suffix(buffer, " ");
+            } else {
+                x.visit(buffer);
             }
         }
     }
