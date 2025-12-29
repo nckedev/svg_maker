@@ -85,7 +85,7 @@ impl Length {
     pub fn is_zero(&self) -> bool {
         match self {
             Length::Percent(percent) => percent.0 == 0,
-            Length::Px(px) => px.0 == 0,
+            Length::Px(px) => px.0 == 0.,
             Length::Expr(expr) => false,
         }
     }

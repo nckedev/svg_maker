@@ -109,7 +109,13 @@ impl Visit for Color {
             Color::Oklch(l, c, h) => &format!("oklch({} {} {})", l, c, h),
             Color::OklchAlpha(l, c, h, a) => &format!("oklch({} {} {} / {})", l, c, h, a),
             Color::OklchFrom(_color, _, _, _, _) => todo!(),
-            Color::CssVar(_) => todo!(),
+            Color::CssVar(var) => {
+                if var.starts_with("--") {
+                    &format!("var({})", var)
+                } else {
+                    &format!("var(--{})", var)
+                }
+            }
             Color::CurrentColor => "currentColor",
             Color::Url(s) => {
                 if s.starts_with("#") {

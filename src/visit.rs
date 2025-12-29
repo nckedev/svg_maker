@@ -19,6 +19,12 @@ pub trait Visit {
         self.visit(buffer);
         buffer.push_str(suffix);
     }
+
+    fn visit_return(&self) -> String {
+        let mut buffer = Buffer::with_capacity(50);
+        self.visit(&mut buffer);
+        buffer.str().to_string()
+    }
 }
 
 impl Visit for String {

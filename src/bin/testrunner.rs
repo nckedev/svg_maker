@@ -5,6 +5,7 @@ use svg_maker::{
     shapes::path::Path,
     style::{LineCap, LineJoin},
     units::{Percent, Px},
+    visit::Visit,
 };
 
 fn main() {
@@ -52,8 +53,29 @@ fn main() {
     // );
 
     let v = [100, 200, 130, 350];
-    println!("{}", barchart(&v, BarChartOpts::default()).render());
-    let _ = barchart(&v, BarChartOpts::default()).debug(1);
+    println!(
+        "{}",
+        barchart(&v, BarChartOpts::default(), &Theme::default()).render()
+    );
+    let _ = barchart(&v, BarChartOpts::default(), &Theme::default()).debug(1);
+}
+
+struct Theme {
+    primary: Color,
+    secondary: Color,
+    neutral: Color,
+    text: Color,
+}
+
+impl Default for Theme {
+    fn default() -> Self {
+        Self {
+            primary: Color::CssVar("--primary".to_string()),
+            secondary: Color::CssVar("--secondary".to_string()),
+            neutral: Color::Black,
+            text: Color::Black,
+        }
+    }
 }
 
 struct BarChartOpts {
@@ -72,7 +94,7 @@ impl Default for BarChartOpts {
     }
 }
 
-fn barchart(values: &[i32], opts: BarChartOpts) -> Svg {
+fn barchart(values: &[i32], opts: BarChartOpts, theme: &Theme) -> Svg {
     let len = values.len();
     const SIZE: u32 = 400;
     let max_bar_width = 100;
@@ -97,10 +119,12 @@ fn barchart(values: &[i32], opts: BarChartOpts) -> Svg {
 
         paths.push(p);
     }
-    s.css(
-        r#"
-        :root {
-            --primary_hue: 0;
+    s.css(&{
+        let primary = theme.primary.visit_return();
+        format!(
+            r#"
+        :root {{
+            --primary_hue: {primary};
             --secondary_hue: 24;
             --stroke_hue: 0;
             --lightness: 50%;
@@ -109,17 +133,18 @@ fn barchart(values: &[i32], opts: BarChartOpts) -> Svg {
             --secondary: oklch(var(--lightness) var(--chroma) var(--secondary_hue));
             --stroke: oklch(100% 0 0);
             --black: oklch(40% 0.13 80);
-        }
-        path.hover {
+        }}
+        path.hover {{
             fill: var(--primary);
             stroke: var(--stroke);
             transition: fill 0.3s ease-in-out;
-        }
-        path.hover:hover {
+        }}
+        path.hover:hover {{
             fill: var(--secondary);
-        }
-    "#,
-    )
+        }}
+    "#
+        )
+    })
     .version("2")
     .push_vec(paths)
     .viewbox(0, 0, 400, 400)
