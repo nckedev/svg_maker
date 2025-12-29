@@ -2,7 +2,9 @@ use std::{error::Error, fs::File, io::Write};
 
 use svg_maker_derive::*;
 
-use crate::{buffer::Buffer, element::Element, marker_traits::BaseElement, visit::Visit};
+use crate::{
+    buffer::Buffer, element::Element, marker_traits::BaseElement, units::Length, visit::Visit,
+};
 
 pub use crate::marker_traits::Shape;
 
@@ -18,8 +20,8 @@ pub mod visit;
 
 #[derive(BaseStyle)]
 pub struct Svg {
-    w: u16,
-    h: u16,
+    w: Length,
+    h: Length,
     viewbox: Option<Viewbox>,
     version: String,
     namespace: String,
@@ -33,9 +35,13 @@ impl Svg {
         Self::default()
     }
 
-    pub fn size(mut self, w: u16, h: u16) -> Self {
-        self.w = w;
-        self.h = h;
+    pub fn size<W, H>(mut self, w: W, h: H) -> Self
+    where
+        W: Into<Length>,
+        H: Into<Length>,
+    {
+        self.w = w.into();
+        self.h = h.into();
         self
     }
 
@@ -44,8 +50,13 @@ impl Svg {
         self
     }
 
-    pub fn viewbox(mut self, x: u32, y: u32, w: u32, h: u32) -> Self {
-        self.viewbox = Some(Viewbox { x, y, w, h });
+    pub fn viewbox<T: Into<f64>>(mut self, x: T, y: T, w: T, h: T) -> Self {
+        self.viewbox = Some(Viewbox {
+            x: x.into(),
+            y: y.into(),
+            w: w.into(),
+            h: h.into(),
+        });
         self
     }
 
@@ -100,10 +111,10 @@ impl Svg {
         let mut buffer = Buffer::with_capacity(100);
         buffer.opts.optimizations.remove_unit_for_px = true;
         buffer.push_tag("svg");
-        if self.w > 0 {
+        if self.w.is_greater_than_zero() {
             buffer.push_attr("width", &self.w);
         }
-        if self.h > 0 {
+        if self.h.is_greater_than_zero() {
             buffer.push_attr("height", &self.h);
         }
         buffer.push_attr_opt("viewbox", &self.viewbox);
@@ -207,15 +218,15 @@ impl Svg {
 impl Default for Svg {
     fn default() -> Self {
         Self {
-            w: 0,
-            h: 0,
+            w: 0.into(),
+            h: 0.into(),
             version: "1.1".to_string(),
             namespace: "http://www.w3.org/2000/svg".to_string(),
             viewbox: Some(Viewbox {
-                x: 0,
-                y: 0,
-                w: 100,
-                h: 100,
+                x: 0.,
+                y: 0.,
+                w: 100.,
+                h: 100.,
             }),
             css: None,
             defs: Vec::new(),
@@ -225,10 +236,10 @@ impl Default for Svg {
 }
 
 struct Viewbox {
-    x: u32,
-    y: u32,
-    w: u32,
-    h: u32,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
 }
 
 impl Visit for Viewbox {

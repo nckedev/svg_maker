@@ -1,11 +1,8 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
 use svg_maker::{
-    Shape, Svg,
-    color::Color,
-    element::Element,
-    shapes::path::Path,
-    style::{LineCap, LineJoin},
-    units::{Percent, Px},
-    visit::Visit,
+    Shape, Svg, color::Color, element::Element, shapes::path::Path, style::LineJoin,
+    units::Percent, visit::Visit,
 };
 
 fn main() {
@@ -111,7 +108,7 @@ fn barchart(values: &[i32], opts: BarChartOpts, theme: &Theme) -> Svg {
             // .stroke_dasharray(&[Percent(9), 2])
             .stroke_linejoin(LineJoin::Round)
             .move_to(start, 400)
-            .vertical_line_relative(-1 * height)
+            .vertical_line_relative(-height)
             .cubic_bezier_relative((0, -20), (0, -20), (20, -20))
             .horizontal_line_relative(10)
             .cubic_bezier_relative((20, 0), (20, 0), (20, 20))

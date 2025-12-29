@@ -86,7 +86,15 @@ impl Length {
         match self {
             Length::Percent(percent) => percent.0 == 0,
             Length::Px(px) => px.0 == 0.,
-            Length::Expr(expr) => false,
+            Length::Expr(_) => false,
+        }
+    }
+
+    pub fn is_greater_than_zero(&self) -> bool {
+        match self {
+            Length::Percent(percent) => percent.0 > 0,
+            Length::Px(px) => px.0 > 0.,
+            Length::Expr(_) => true,
         }
     }
 }
@@ -132,6 +140,12 @@ impl From<Expr> for Length {
 impl From<u32> for Length {
     fn from(value: u32) -> Self {
         Self::Px(Px(value.into()))
+    }
+}
+
+impl From<f64> for Length {
+    fn from(value: f64) -> Self {
+        Self::Px(Px(value))
     }
 }
 
