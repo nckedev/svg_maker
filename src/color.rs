@@ -30,8 +30,8 @@ impl From<Color> for InternalColor {
             Color::Rgb(_r, _g, _b) => todo!(),
             Color::Rgba(_r, _g, _b, _a) => todo!(),
             Color::Hex(_) => todo!(),
-            Color::Oklch(l, c, h) => InternalColor::new(l, c, h, None),
-            Color::OklchAlpha(l, c, h, a) => InternalColor::new(l, c, h, Some(a)),
+            Color::Oklch(l, c, h) => todo!(),
+            Color::OklchAlpha(l, c, h, a) => todo!(),
             _ => todo!("catch all fallback"),
         }
     }
@@ -86,7 +86,7 @@ pub enum Color {
     Rgba(u8, u8, u8, u8),
     Hex(String),
     //lightness, chroma, hue / alpha
-    Oklch(u8, u8, u16),
+    Oklch(f64, f64, u16),
     OklchAlpha(u8, u8, u16, u8),
     OklchFrom(Rc<Color>, u8, u8, u16, u8),
     CssVar(String),

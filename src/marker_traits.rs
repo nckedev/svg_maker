@@ -16,8 +16,10 @@ pub trait OpenEndedShape {}
 pub trait ClosedShape {}
 
 /// marker trait for elements that contains text
-/// text, textpath, tspan
+/// <textPath>, <text>, <tspan>
 pub trait TextElement {}
+/// <textPath>, <tspan>
+pub trait TextElementChild {}
 
 pub trait BaseElement: Visit + Any {
     fn as_any(&self) -> &dyn Any;
@@ -43,3 +45,6 @@ pub trait Animate {}
 pub trait RootElement {}
 
 pub trait Hx {}
+
+///<a>, <circle>, <ellipse>, <foreignObject>, <g>, <image>, <line>, <path>, <polygon>, <polyline>, <rect>, <svg>, <switch>, <symbol>, <text>, <textPath>, <tspan>, <use>
+pub trait Renderable {}

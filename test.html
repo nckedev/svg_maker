@@ -5,33 +5,34 @@
     <meta http-equiv="refresh" content="1" />
   </head>
   <body style="background:black;">
-    <svg viewbox="0 0 400 400" version="2" xmlns="http://www.w3.org/2000/svg" >
-	<style >
+    <svg viewbox="0 0 400 400" version="2" xmlns="http://www.w3.org/2000/svg">
+	<style>
 
         :root {
-            --primary_hue: var(--primary);
+            --primary_hue: oklch(0.75 0.15 60);
             --secondary_hue: 24;
             --stroke_hue: 0;
             --lightness: 50%;
             --chroma: 0.2;
-            --primary: oklch(var(--lightness) var(--chroma) var(--primary_hue));
-            --secondary: oklch(var(--lightness) var(--chroma) var(--secondary_hue));
-            --stroke: oklch(100% 0 0);
+            --primary: oklch(0.75 0.15 60);
+            --secondary: oklch(0.75 0.15 225);
+            --stroke: oklch(0.75 0 60);
             --black: oklch(40% 0.13 80);
         }
         path.hover {
             fill: var(--primary);
-            stroke: var(--stroke);
+            // stroke: var(--stroke);
             transition: fill 0.3s ease-in-out;
         }
         path.hover:hover {
             fill: var(--secondary);
         }
     	</style>
-	<path d="M25,400 v-80 c0,-20,0,-20,20,-20 h10 c20,0,20,0,20,20 v80" class="hover"  style=" stroke-width: 2; stroke-linejoin: round;" />
-	<path d="M101,400 v-180 c0,-20,0,-20,20,-20 h10 c20,0,20,0,20,20 v180" class="hover"  style=" stroke-width: 2; stroke-linejoin: round;" />
-	<path d="M177,400 v-110 c0,-20,0,-20,20,-20 h10 c20,0,20,0,20,20 v110" class="hover"  style=" stroke-width: 2; stroke-linejoin: round;" />
-	<path d="M253,400 v-330 c0,-20,0,-20,20,-20 h10 c20,0,20,0,20,20 v330" class="hover"  style=" stroke-width: 2; stroke-linejoin: round;" />
+	<path d="M25,400 v-80 c0,-20,0,-20,20,-20 h10 c20,0,20,0,20,20 v80" id="bar0" class="hover" style="stroke-width: 2; stroke-linejoin: round;"/>
+	<path d="M101,400 v-180 c0,-20,0,-20,20,-20 h10 c20,0,20,0,20,20 v180" id="bar1" class="hover" style="stroke-width: 2; stroke-linejoin: round;"/>
+	<path d="M177,400 v-110 c0,-20,0,-20,20,-20 h10 c20,0,20,0,20,20 v110" id="bar2" class="hover" style="stroke-width: 2; stroke-linejoin: round;"/>
+	<path d="M253,400 v-330 c0,-20,0,-20,20,-20 h10 c20,0,20,0,20,20 v330" id="bar3" class="hover" style="stroke-width: 2; stroke-linejoin: round;"/>
+	<path d="M329,400 v-20 c0,-20,0,-20,20,-20 h10 c20,0,20,0,20,20 v20" id="bar4" class="hover" style="stroke-width: 2; stroke-linejoin: round;"/>
 </svg>
 
     <div>

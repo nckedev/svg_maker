@@ -318,3 +318,58 @@ impl Visit for Angle {
         };
     }
 }
+// ==== TIME =======================================================================
+#[derive(Clone, Copy, Debug)]
+pub enum Time {
+    MilliSeconds(f64),
+    Seconds(f64),
+}
+
+impl Time {
+    pub(crate) fn to_seconds_if_shorter(self) -> Self {
+        if let Time::MilliSeconds(ms) = self
+            && ms % 1000. == 0.
+        {
+            Self::Seconds(ms / 1000.)
+        } else {
+            self
+        }
+    }
+}
+
+impl Visit for Time {
+    fn visit(&self, buffer: &mut Buffer) {
+        let mut t = *self;
+        if buffer.opts.optimizations.convert_ms_to_s_if_shorter {
+            t = self.to_seconds_if_shorter();
+        };
+
+        match t {
+            Time::MilliSeconds(ms) => buffer.push_str(&format!("{}ms", ms)),
+            Time::Seconds(s) => buffer.push_str(&format!("{}s", s)),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod time {
+        use rstest::rstest;
+
+        use crate::{buffer::Buffer, units::Time, visit::Visit};
+
+        #[rstest]
+        #[case(Time::MilliSeconds(2000f64), "2s")]
+        #[case(Time::MilliSeconds(200f64), "200ms")]
+        #[case(Time::MilliSeconds(2550f64), "2550ms")]
+        #[case(Time::Seconds(20f64), "20s")]
+        fn time_shortening_optmization(#[case] before: Time, #[case] after: &str) {
+            let mut buffer = Buffer::with_capacity(100);
+            buffer.opts.optimizations.convert_ms_to_s_if_shorter = true;
+            before.visit(&mut buffer);
+            assert_eq!(buffer.str(), after);
+        }
+    }
+}

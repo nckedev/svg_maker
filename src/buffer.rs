@@ -20,7 +20,6 @@ impl Buffer {
         self.indent();
         self.inner.push('<');
         self.inner.push_str(tag);
-        self.inner.push(' ');
         self.tabs += 1;
     }
 
@@ -48,10 +47,11 @@ impl Buffer {
     }
 
     pub fn push_attr(&mut self, attr: &str, value: &impl Visit) {
+        self.inner.push(' ');
         self.inner.push_str(attr);
         self.inner.push_str("=\"");
         value.visit(self);
-        self.inner.push_str("\" ");
+        self.inner.push('"');
     }
 
     pub fn push_attr_opt(&mut self, attr: &str, value: &Option<impl Visit>) {
@@ -71,6 +71,7 @@ impl Buffer {
     fn indent(&mut self) {
         if !self.opts.optimizations.remove_indent {
             let count = self.tabs;
+            eprintln!("tabs: {}", count);
             for _ in 0..count {
                 self.inner.push('\t');
             }
@@ -89,5 +90,9 @@ impl Buffer {
 
     pub fn str(&self) -> &str {
         &self.inner
+    }
+
+    pub fn pop(&mut self) {
+        self.inner.pop();
     }
 }

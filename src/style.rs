@@ -23,10 +23,10 @@ impl Visit for Style {
         macro_rules! visit_if_not_none {
             ($ident:ident, $str:literal) => {
                 if let Some($ident) = &self.$ident {
-                    let str = format!(" {}: ", $str);
+                    let str = format!("{}: ", $str);
                     buffer.push_str(&str);
                     $ident.visit(buffer);
-                    buffer.push(';');
+                    buffer.push_str("; ");
                 }
             };
         }
@@ -63,7 +63,8 @@ impl Visit for Style {
         visit_if_not_none!(stroke_miterlimit, "stroke-miterlimit");
         visit_if_not_none!(stroke_opacity, "stroke_opacity");
 
-        buffer.push_str(r##"" "##);
+        buffer.pop(); //remove the last whitespace
+        buffer.push_str(r##"""##);
     }
 }
 

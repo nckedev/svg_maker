@@ -20,8 +20,8 @@ pub mod visit;
 
 #[derive(BaseStyle)]
 pub struct Svg {
-    w: Length,
-    h: Length,
+    w: Option<Length>,
+    h: Option<Length>,
     viewbox: Option<Viewbox>,
     version: String,
     namespace: String,
@@ -35,16 +35,38 @@ impl Svg {
         Self::default()
     }
 
+    /// Sets the size of the svg, if width or height is less or equal to zero it will be ignored.
+    /// ```
+    /// # use svg_maker::Svg;
+    /// use svg_maker::units::Percent;
+    /// let svg = Svg::new().size(Percent(20), 10);
+    /// let rendered = svg.render();
+    /// assert!(rendered.contains(r#"width="20%""#));
+    /// assert!(rendered.contains(r#"height="10""#));
+    /// ```
     pub fn size<W, H>(mut self, w: W, h: H) -> Self
     where
         W: Into<Length>,
         H: Into<Length>,
     {
-        self.w = w.into();
-        self.h = h.into();
+        let w = w.into();
+        let h = h.into();
+        if w.is_greater_than_zero() {
+            self.w = Some(w);
+        }
+        if h.is_greater_than_zero() {
+            self.h = Some(h);
+        }
         self
     }
 
+    /// Sets the svg version
+    /// ```
+    /// # use svg_maker::Svg;
+    /// let svg = Svg::new().version("2");
+    /// let rendered = svg.render();
+    /// assert!(rendered.contains(r#"version="2""#));
+    /// ```
     pub fn version(mut self, version: &str) -> Self {
         self.version = version.to_string();
         self
@@ -65,6 +87,7 @@ impl Svg {
         self
     }
 
+    /// Add a reusable symbol, a symbol has its own viewbox
     pub fn symbol(mut self) -> Self {
         self
     }
@@ -79,6 +102,17 @@ impl Svg {
             "a definition is useless without an id"
         );
         self.defs.push(Box::new(el));
+        self
+    }
+
+    pub fn defs(mut self, elements: Vec<Box<dyn BaseElement>>) -> Self {
+        debug_assert!(
+            elements.iter().all(|e| e.get_id().is_some()),
+            "a element definition is useless without an id"
+        );
+        for element in elements {
+            self.defs.push(element);
+        }
         self
     }
 
@@ -111,12 +145,8 @@ impl Svg {
         let mut buffer = Buffer::with_capacity(100);
         buffer.opts.optimizations.remove_unit_for_px = true;
         buffer.push_tag("svg");
-        if self.w.is_greater_than_zero() {
-            buffer.push_attr("width", &self.w);
-        }
-        if self.h.is_greater_than_zero() {
-            buffer.push_attr("height", &self.h);
-        }
+        buffer.push_attr_opt("width", &self.w);
+        buffer.push_attr_opt("height", &self.h);
         buffer.push_attr_opt("viewbox", &self.viewbox);
         buffer.push_attr("version", &self.version);
         buffer.push_attr("xmlns", &self.namespace);
@@ -218,8 +248,8 @@ impl Svg {
 impl Default for Svg {
     fn default() -> Self {
         Self {
-            w: 0.into(),
-            h: 0.into(),
+            w: None,
+            h: None,
             version: "1.1".to_string(),
             namespace: "http://www.w3.org/2000/svg".to_string(),
             viewbox: Some(Viewbox {
@@ -280,47 +310,16 @@ impl Visit for Raw {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        color::Color,
-        shapes::{line::Line, path::Path},
-        units::{Percent, Px},
-    };
-
     use super::*;
+    use crate::shapes::path::Path;
 
     #[test]
-    fn it_works() {
-        let mut s = Svg::new().size(100, 100).push(
-            Path::new()
-                .into_element()
-                .class("testing")
-                .class("testing22")
-                .transform(element::Transform::Scale(2, 2))
-                // .push(Command::MoveTo(Coord(10, 10)))
-                .move_to(10, 9)
-                .stroke(Color::Red)
-                .fill(Color::Black),
-        );
-        // .push(ElementBuilder::raw("testing"));
-        let _ = s.render();
-        let x = s.get_element_by_id::<Line>("myid");
-        if let Some(x) = x {
-            x.style.fill = Some(Color::Black);
-        }
-
-        let _ = s.render();
-
-        assert_eq!(6, 4);
-    }
-
-    #[test]
-    fn test_expr_reducing() {
-        let a = Px(2.);
-        let b = Px(3.);
-        let c = a + b + Percent(4) + 3;
-        let mut buf = Buffer::with_capacity(10);
-        c.visit(&mut buf);
-        eprintln!("expr:{}", buf.str());
-        assert_eq!(1, 2);
+    fn get_element_by_id() {
+        let mut s = Svg::new().push(Element::path().id("test_id"));
+        let path = s.get_element_by_id::<Path>("test_id");
+        assert!(path.is_some());
+        assert_eq!(path.unwrap().id.as_ref().unwrap(), &"test_id".to_string());
+        let path = s.get_element_by_id::<Path>("this_id_doesnt_exist");
+        assert!(path.is_none());
     }
 }
