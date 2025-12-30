@@ -3,7 +3,11 @@ use std::{error::Error, fs::File, io::Write};
 use svg_maker_derive::*;
 
 use crate::{
-    buffer::Buffer, element::Element, marker_traits::BaseElement, units::Length, visit::Visit,
+    buffer::Buffer,
+    element::Element,
+    marker_traits::BaseElement,
+    units::{AlignAspectRatio, Length, MeetOrSlice},
+    visit::Visit,
 };
 
 pub use crate::marker_traits::Shape;
@@ -24,6 +28,7 @@ pub struct Svg {
     h: Option<Length>,
     viewbox: Option<Viewbox>,
     version: String,
+    preserve_aspect_ratio: Option<PreserveAspectRatio>,
     namespace: String,
     css: Option<String>,
     defs: Vec<Box<dyn BaseElement>>,
@@ -78,6 +83,18 @@ impl Svg {
             y: y.into(),
             w: w.into(),
             h: h.into(),
+        });
+        self
+    }
+
+    pub fn preserv_aspect_ratio(
+        mut self,
+        alignment: AlignAspectRatio,
+        meet_or_slice: MeetOrSlice,
+    ) -> Self {
+        self.preserve_aspect_ratio = Some(PreserveAspectRatio {
+            alignment,
+            meet_or_slice,
         });
         self
     }
@@ -148,6 +165,11 @@ impl Svg {
         buffer.push_attr_opt("width", &self.w);
         buffer.push_attr_opt("height", &self.h);
         buffer.push_attr_opt("viewbox", &self.viewbox);
+        if let Some(PreserveAspectRatio { alignment, .. }) = &self.preserve_aspect_ratio
+            && *alignment != AlignAspectRatio::None
+        {
+            buffer.push_attr_opt("preserveAspectRatio", &self.preserve_aspect_ratio);
+        }
         buffer.push_attr("version", &self.version);
         buffer.push_attr("xmlns", &self.namespace);
         buffer.push_tag_end();
@@ -258,6 +280,7 @@ impl Default for Svg {
                 w: 100.,
                 h: 100.,
             }),
+            preserve_aspect_ratio: None,
             css: None,
             defs: Vec::new(),
             children: Vec::new(),
@@ -305,6 +328,18 @@ pub struct Raw {
 impl Visit for Raw {
     fn visit(&self, buffer: &mut Buffer) {
         buffer.push_str(&self.inner);
+    }
+}
+
+struct PreserveAspectRatio {
+    alignment: AlignAspectRatio,
+    meet_or_slice: MeetOrSlice,
+}
+
+impl Visit for PreserveAspectRatio {
+    fn visit(&self, buffer: &mut Buffer) {
+        self.alignment.visit(buffer);
+        self.meet_or_slice.visit(buffer);
     }
 }
 

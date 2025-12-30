@@ -142,9 +142,9 @@ fn barchart(values: &[i32], opts: &BarChartOpts, theme: &Theme) -> Result<Svg, B
     let len = values.len() as u32;
     const SIZE: u32 = 400;
     let max_bar_width = 100;
-    if SIZE / len < max_bar_width {
-        return Err("min bar width".into());
-    }
+    // if SIZE / len < max_bar_width {
+    //     return Err("min bar width".into());
+    // }
     let padding = Px::from(20);
     let mut s = Svg::new();
     let mut paths = vec![];
@@ -199,6 +199,11 @@ fn barchart(values: &[i32], opts: &BarChartOpts, theme: &Theme) -> Result<Svg, B
         .version("2")
         .push_vec(paths)
         .size(Percent(20), Percent(20))
+        .preserv_aspect_ratio(
+            svg_maker::units::AlignAspectRatio::XMidYMid,
+            svg_maker::units::MeetOrSlice::Meet,
+        )
         .viewbox(0, 0, 400, 400);
+
     Ok(s)
 }

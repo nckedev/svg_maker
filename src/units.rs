@@ -318,6 +318,7 @@ impl Visit for Angle {
         };
     }
 }
+
 // ==== TIME =======================================================================
 #[derive(Clone, Copy, Debug)]
 pub enum Time {
@@ -348,6 +349,57 @@ impl Visit for Time {
             Time::MilliSeconds(ms) => buffer.push_str(&format!("{}ms", ms)),
             Time::Seconds(s) => buffer.push_str(&format!("{}s", s)),
         }
+    }
+}
+
+// ====== ALignAspectRatio ====================================================
+
+#[derive(PartialEq, Eq)]
+pub enum AlignAspectRatio {
+    None,
+    XMinYMin,
+    XMinYMid,
+    XMinYMax,
+    XMidYMin,
+    XMidYMid,
+    XMidYMax,
+    XMaxYMin,
+    XMaxYMid,
+    XMaxYMax,
+}
+
+impl Visit for AlignAspectRatio {
+    fn visit(&self, buffer: &mut Buffer) {
+        let v = match self {
+            AlignAspectRatio::None => "",
+            AlignAspectRatio::XMinYMin => "xMinYMin",
+            AlignAspectRatio::XMinYMid => "xMinYMid",
+            AlignAspectRatio::XMinYMax => "xMinYMax",
+            AlignAspectRatio::XMidYMin => "xMidYMin",
+            AlignAspectRatio::XMidYMid => "xMidYMid",
+            AlignAspectRatio::XMidYMax => "xMidYMax",
+            AlignAspectRatio::XMaxYMin => "xMaxYMin",
+            AlignAspectRatio::XMaxYMid => "xMaxYMid",
+            AlignAspectRatio::XMaxYMax => "xMaxYMax",
+        };
+        buffer.push_str(v);
+    }
+}
+
+// ====== MeetOrSlice =========================================================
+
+pub enum MeetOrSlice {
+    Meet,
+    Slice,
+}
+
+impl Visit for MeetOrSlice {
+    fn visit(&self, buffer: &mut Buffer) {
+        let v = match self {
+            MeetOrSlice::Meet => " meet",
+            MeetOrSlice::Slice => " slice",
+        };
+        buffer.push_str(v);
     }
 }
 
