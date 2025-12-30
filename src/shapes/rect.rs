@@ -58,3 +58,20 @@ impl Visit for Rect {
         buffer.push_attr_opt("ry", &self.ry);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::units::{Percent, Px};
+
+    use super::*;
+
+    #[test]
+    fn rect() {
+        let rect = Element::rect(10, Percent(20), Px(20.), 20)
+            .corner_radius(10.)
+            .render();
+        let expected =
+            r#"<rect x="10px" y="20%" width="20px" height="20px" rx="10px"/>"#.to_string() + "\n";
+        assert_eq!(rect, expected)
+    }
+}
