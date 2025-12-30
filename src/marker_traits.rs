@@ -48,3 +48,6 @@ pub trait Hx {}
 
 ///<a>, <circle>, <ellipse>, <foreignObject>, <g>, <image>, <line>, <path>, <polygon>, <polyline>, <rect>, <svg>, <switch>, <symbol>, <text>, <textPath>, <tspan>, <use>
 pub trait Renderable {}
+
+///<a>, <defs>, <g>, <marker>, <mask>, <pattern>, <svg>, <switch>, <symbol>
+pub trait ContainerElement {}
