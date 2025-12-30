@@ -259,6 +259,8 @@ pub(crate) struct Options {
 #[derive(Default, Debug)]
 pub(crate) struct Optimizations {
     pub(crate) remove_unit_for_px: bool,
+    pub(crate) remove_unit_for_deg: bool,
+    pub(crate) convert_ms_to_s_if_shorter: bool,
     pub(crate) remove_newline: bool,
     pub(crate) remove_indent: bool,
 }
