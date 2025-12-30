@@ -204,6 +204,7 @@ impl Visit for Percent {
 
 #[derive(Clone, Copy, Debug)]
 pub struct Px(pub f64);
+
 impl<T: Num + Into<f64>> From<T> for Px {
     fn from(value: T) -> Self {
         Px(value.into())
@@ -289,4 +290,31 @@ impl_ops_for_lenght_units!(Percent, Px);
 //     //self = px
 //     //rhs = into Length
 // }
-//
+
+pub enum Angle {
+    Deg(f64),
+    Grad(f64),
+    Rad(f64),
+}
+
+impl<T: Num + Into<f64>> From<T> for Angle {
+    fn from(value: T) -> Self {
+        Angle::Deg(value.into())
+    }
+}
+
+impl Visit for Angle {
+    fn visit(&self, buffer: &mut Buffer) {
+        match self {
+            Angle::Deg(v) => {
+                if buffer.opts.optimizations.remove_unit_for_deg {
+                    buffer.push_str(&format!("{}", v))
+                } else {
+                    buffer.push_str(&format!("{}deg", v))
+                }
+            }
+            Angle::Grad(v) => buffer.push_str(&format!("{}grad", v)),
+            Angle::Rad(v) => buffer.push_str(&format!("{}rad", v)),
+        };
+    }
+}
