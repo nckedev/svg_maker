@@ -71,7 +71,7 @@ mod tests {
             .corner_radius(10.)
             .render(None);
         let expected =
-            r#"<rect x="10px" y="20%" width="20px" height="20px" rx="10px"/>"#.to_string() + "\n";
+            r#"<rect x="10" y="20%" width="20" height="20" rx="10"/>"#.to_string() + "\n";
         assert_eq!(rect, expected)
     }
 }
