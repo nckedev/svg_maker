@@ -321,6 +321,18 @@ pub struct Optimizations {
     pub remove_indent: bool,
 }
 
+impl Optimizations {
+    pub fn all() -> Self {
+        Self {
+            remove_unit_for_px: true,
+            remove_unit_for_deg: true,
+            convert_ms_to_s_if_shorter: true,
+            remove_newline: true,
+            remove_indent: true,
+        }
+    }
+}
+
 impl Default for Optimizations {
     /// default configuration for optimizations
     /// remove_unit_for_px: true,
