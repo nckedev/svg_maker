@@ -1,79 +1,4 @@
-use std::rc::Rc;
-
 use crate::{buffer::Buffer, visit::Visit};
-
-struct InternalColor {
-    lum: u8,
-    chroma: u8,
-    hue: u16,
-    alpha: Option<u8>,
-}
-
-impl InternalColor {
-    fn new(lum: u8, chroma: u8, hue: u16, alpha: Option<u8>) -> Self {
-        Self {
-            lum,
-            chroma,
-            hue,
-            alpha,
-        }
-    }
-}
-
-impl From<Color> for InternalColor {
-    fn from(value: Color) -> Self {
-        match value {
-            Color::Red => InternalColor::new(50, 100, 50, None),
-            Color::Black => todo!(),
-            Color::White => todo!(),
-            Color::Transparent => todo!(),
-            Color::Rgb(_r, _g, _b) => todo!(),
-            Color::Rgba(_r, _g, _b, _a) => todo!(),
-            Color::Hex(_) => todo!(),
-            Color::Oklch(l, c, h) => todo!(),
-            Color::OklchAlpha(l, c, h, a) => todo!(),
-            _ => todo!("catch all fallback"),
-        }
-    }
-}
-
-impl From<&Color> for InternalColor {
-    fn from(value: &Color) -> Self {
-        match value {
-            Color::Black => todo!(),
-            Color::White => todo!(),
-            Color::Transparent => todo!(),
-            Color::Rgb(_, _, _) => todo!(),
-            Color::Rgba(_, _, _, _) => todo!(),
-            Color::Hex(_) => todo!(),
-            Color::Oklch(_, _, _) => todo!(),
-            Color::OklchAlpha(_, _, _, _) => todo!(),
-            // NOTE: this does not work on all browsers for tvs.
-            Color::OklchFrom(_color, _, _, _, _) => todo!(),
-            Color::CssVar(_) => todo!(),
-            _ => todo!("fallback"),
-        }
-    }
-}
-
-impl From<InternalColor> for String {
-    fn from(value: InternalColor) -> Self {
-        match value {
-            InternalColor {
-                lum,
-                chroma,
-                hue,
-                alpha: Some(a),
-            } => format!("oklch({} {} {} / {})", lum, chroma, hue, a),
-            InternalColor {
-                lum,
-                chroma,
-                hue,
-                alpha: None,
-            } => format!("oklch({} {} {})", lum, chroma, hue),
-        }
-    }
-}
 
 #[allow(clippy::enum_variant_names)] // warns on currentcolor otherwise
 pub enum Color {
@@ -86,9 +11,7 @@ pub enum Color {
     Rgba(u8, u8, u8, u8),
     Hex(String),
     //lightness, chroma, hue / alpha
-    Oklch(f64, f64, u16),
-    OklchAlpha(u8, u8, u16, u8),
-    OklchFrom(Rc<Color>, u8, u8, u16, u8),
+    Oklch(Oklch),
     CssVar(String),
     CurrentColor,
     Url(String),
@@ -105,10 +28,8 @@ impl Visit for Color {
             Color::Transparent => todo!(),
             Color::Rgb(r, g, b) => &format!("rgb({} {} {})", r, g, b),
             Color::Rgba(_, _, _, _) => todo!(),
-            Color::Hex(_) => todo!(),
-            Color::Oklch(l, c, h) => &format!("oklch({} {} {})", l, c, h),
-            Color::OklchAlpha(l, c, h, a) => &format!("oklch({} {} {} / {})", l, c, h, a),
-            Color::OklchFrom(_color, _, _, _, _) => todo!(),
+            Color::Hex(s) => s,
+            Color::Oklch(color) => &color.visit_return(),
             Color::CssVar(var) => {
                 if var.starts_with("--") {
                     &format!("var({})", var)
@@ -129,6 +50,12 @@ impl Visit for Color {
     }
 }
 
+impl From<Oklch> for Color {
+    fn from(value: Oklch) -> Self {
+        Color::Oklch(value)
+    }
+}
+
 impl From<&str> for Color {
     fn from(value: &str) -> Self {
         match value {
@@ -138,9 +65,81 @@ impl From<&str> for Color {
         }
     }
 }
-pub struct Oklch<L, C> {
-    lum: L,
-    chroma: C,
+
+#[derive(Clone, Copy, Default, Debug)]
+pub struct Oklch {
+    lightness: f64,
+    chroma: f64,
     hue: u16,
-    alpha: Option<f32>,
+    alpha: Option<f64>,
+}
+
+impl Oklch {
+    pub fn new(lum: f64, chroma: f64, hue: u16) -> Self {
+        Self {
+            lightness: lum,
+            chroma,
+            hue,
+            alpha: None,
+        }
+    }
+    pub fn with_aplha(mut self, alpha: f64) -> Self {
+        self.alpha = Some(alpha);
+        self
+    }
+
+    pub fn clone_with_hue(&self, hue: u16) -> Self {
+        let mut color = *self;
+        color.hue = hue;
+        color
+    }
+
+    pub fn generate_from_with_lightness<const N: usize>(
+        from: Oklch,
+        lightness_variance: f64,
+    ) -> [Oklch; N] {
+        debug_assert!(lightness_variance <= 1., "lightness variance should be < 1");
+        let mut list = [Oklch::default(); N];
+        (0..N).for_each(|x| {
+            list[x] = Oklch {
+                lightness: from.lightness + (x as f64 * lightness_variance),
+                chroma: from.chroma,
+                hue: from.hue,
+                alpha: from.alpha,
+            };
+        });
+        list
+    }
+
+    pub fn generate_from_with_hue<const N: usize>(from: Oklch, hue_variance: u16) -> [Oklch; N] {
+        let mut list = [from; N];
+        (0..N).for_each(|x| {
+            list[x] = Oklch {
+                lightness: from.lightness,
+                chroma: from.chroma,
+                hue: from.hue + (x as u16 * (hue_variance % 360)),
+                alpha: from.alpha,
+            }
+        });
+        list
+    }
+}
+
+impl Visit for Oklch {
+    fn visit(&self, buffer: &mut Buffer) {
+        match self {
+            Oklch {
+                lightness: lum,
+                chroma,
+                hue,
+                alpha: Some(a),
+            } => buffer.push_str(&format!("oklch({} {} {} / {})", lum, chroma, hue, a)),
+            Oklch {
+                lightness: lum,
+                chroma,
+                hue,
+                alpha: None,
+            } => buffer.push_str(&format!("oklch({} {} {})", lum, chroma, hue)),
+        }
+    }
 }

@@ -64,7 +64,7 @@ impl Buffer {
         }
     }
 
-    pub fn push_attr_if(&mut self, attr: &str, value: &impl Visit, pred: impl Fn() -> bool) {}
+    pub fn push_attr_if(&mut self, _attr: &str, _value: &impl Visit, _pred: impl Fn() -> bool) {}
 
     pub fn push_str(&mut self, str: &str) {
         self.inner.push_str(str);
@@ -77,7 +77,7 @@ impl Buffer {
     fn indent(&mut self) {
         if !self.opts.optimizations.remove_indent {
             let count = self.tabs;
-            eprintln!("tabs: {}", count);
+            // eprintln!("tabs: {}", count);
             for _ in 0..count {
                 self.inner.push('\t');
             }

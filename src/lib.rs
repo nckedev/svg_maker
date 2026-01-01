@@ -22,7 +22,7 @@ pub mod style;
 pub mod units;
 pub mod visit;
 
-#[derive(BaseStyle)]
+#[derive(BaseStyle, ContainerElement)]
 pub struct Svg {
     w: Option<Length>,
     h: Option<Length>,
@@ -39,6 +39,7 @@ impl Element<Svg> {
     pub fn svg() -> Self {
         Element::new(Svg::default())
     }
+
     /// Sets the size of the svg, if width or height is less or equal to zero it will be ignored.
     /// ```
     /// # use svg_maker::Svg;
@@ -106,7 +107,7 @@ impl Element<Svg> {
     }
 
     /// Add a reusable symbol, a symbol has its own viewbox
-    pub fn symbol(mut self) -> Self {
+    pub fn symbol(self) -> Self {
         self
     }
 
@@ -143,6 +144,24 @@ impl Element<Svg> {
         let e: Element<S> = el.into();
         self.children.push(Box::new(e));
         self
+    }
+
+    #[must_use]
+    pub fn push_opt<E, S>(self, el: Option<E>) -> Self
+    where
+        E: Into<Element<S>> + BaseElement,
+        S: Shape + Sized + Visit + 'static,
+    {
+        if let Some(e) = el { self.push(e) } else { self }
+    }
+
+    #[must_use]
+    pub fn push_if<E, S>(self, el: E, pred: bool) -> Self
+    where
+        E: Into<Element<S>> + BaseElement,
+        S: Shape + Sized + Visit + 'static,
+    {
+        if pred { self.push(el) } else { self }
     }
 
     #[must_use]

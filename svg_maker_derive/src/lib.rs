@@ -67,3 +67,8 @@ pub fn derive_hx(tokens: TokenStream) -> TokenStream {
 pub fn derive_shape(tokens: TokenStream) -> TokenStream {
     impl_derive!(Shape, tokens)
 }
+
+#[proc_macro_derive(ContainerElement)]
+pub fn derive_container_element(tokens: TokenStream) -> TokenStream {
+    impl_derive!(ContainerElement, tokens)
+}

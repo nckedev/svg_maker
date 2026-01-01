@@ -4,10 +4,10 @@ use std::{
 };
 
 use crate::{
-    Options, Shape,
+    Options,
     buffer::Buffer,
     color::Color,
-    marker_traits::{BaseElement, BaseStyle, Hx, OpenEndedShape},
+    marker_traits::*,
     style::{FillRule, LineCap, LineJoin, Style},
     units::Length,
     visit::Visit,
@@ -45,7 +45,7 @@ impl<T: Visit + 'static> BaseElement for Element<T> {
 
     fn from_shape<S>(shape: S) -> Element<S>
     where
-        S: Sized + Visit + crate::marker_traits::Shape,
+        S: Sized + Visit + Shape,
     {
         Element::from(shape)
     }

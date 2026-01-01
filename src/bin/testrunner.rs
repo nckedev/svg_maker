@@ -4,11 +4,10 @@ use std::error::Error;
 
 use svg_maker::{
     Shape, Svg,
-    color::Color,
+    color::{Color, Oklch},
     element::Element,
     shapes::path::Path,
     style::LineJoin,
-    units::{Percent, Px},
     visit::Visit,
 };
 
@@ -56,13 +55,14 @@ fn main() {
     //         .fill(Color::Red),
     // );
 
-    let v = [100, 200, 130, 350, 40];
+    let v = [100, 100, 130, 350, 40];
     println!(
         "{}",
         barchart(&v, &BarChartOpts::default(), &Theme::default())
             .unwrap()
             .render(None)
     );
+
     let _ = barchart(&v, &BarChartOpts::default(), &Theme::default())
         .unwrap()
         .debug(1);
@@ -79,17 +79,27 @@ impl Default for Theme {
     fn default() -> Self {
         let lightness = 0.75;
         let chroma = 0.15;
+        let neutral_variance = 0.15;
+        let primary_hue_variance = 10;
+        let a = [2, 2, 2];
+        let b = a[1];
+
+        let neutral_base = Oklch::new(0.60, 0., 60);
+        let neutrals = Oklch::generate_from_with_lightness::<3>(neutral_base, 0.15);
+        let primary_base = Oklch::new(lightness, chroma, 60);
+        let primaries = Oklch::generate_from_with_hue::<3>(primary_base, 10);
+
         Self {
             palette: Palette {
                 black: Color::Black,
-                neutral1: Color::Oklch(0.60, 0., 60),
-                neutral2: Color::Oklch(0.75, 0., 60),
-                neutral3: Color::Oklch(0.90, 0., 60),
+                neutral1: neutrals[0].into(),
+                neutral2: neutrals[1].into(),
+                neutral3: neutrals[2].into(),
                 white: Color::White,
-                primary: Color::Oklch(lightness, chroma, 60),
-                seconday: Color::Oklch(lightness, chroma, 225),
-                good: Color::Oklch(lightness, chroma, 150),
-                bad: Color::Oklch(lightness, chroma, 30),
+                primary: primaries[0].into(),
+                seconday: Oklch::new(lightness, chroma, 225).into(),
+                good: Oklch::new(lightness, chroma, 150).into(),
+                bad: Oklch::new(lightness, chroma, 30).into(),
             },
             profile: Profile::SoftEdges,
             font: "".to_string(),
@@ -149,12 +159,24 @@ fn barchart(
     // if SIZE / len < max_bar_width {
     //     return Err("min bar width".into());
     // }
-    let padding = Px::from(20);
-    let mut s = Element::svg();
+    let padding = 20;
+    let availible_height = 400 - (padding * 2);
+    let availible_width = 400 - (padding * 2);
+    let start_x = padding;
+    let start_y = 400 - padding;
+    let scale_factor = 1;
+    // TODO: check if any bar is higher tham availible height, if so scale them donw with some
+    // factor
+    let spacing = {
+        let total_width = len * 50;
+        let remaining_space = availible_width - total_width;
+        remaining_space / (len - 1)
+    };
     let mut paths = vec![];
+    let offset = 20;
+    let topbar = 10; // width of the top of the bar that isnt curved 
     for (i, v) in values.iter().enumerate() {
-        let start = (i as f64 + 25.) + (i as f64 * 75.);
-        let height = v - 20;
+        let bar_height = v - offset;
         let p = Path::new()
             .into_element()
             .id(&format!("bar{}", i))
@@ -162,16 +184,20 @@ fn barchart(
             .stroke_width(2)
             // .stroke_dasharray(&[Percent(9), 2])
             .stroke_linejoin(LineJoin::Round)
-            .move_to(start, 400)
-            .vertical_line_relative(-height)
-            .cubic_bezier_relative((0, -20), (0, -20), (20, -20))
-            .horizontal_line_relative(10)
-            .cubic_bezier_relative((20, 0), (20, 0), (20, 20))
-            .vertical_line_relative(height as u32);
+            .move_to(
+                start_x + ((spacing + (offset * 2 + topbar) as u32) * i as u32),
+                start_y,
+            )
+            .vertical_line_relative(-bar_height)
+            .cubic_bezier_relative((0, -offset), (0, -offset), (offset, -offset))
+            .horizontal_line_relative(topbar)
+            .cubic_bezier_relative((offset, 0), (offset, 0), (offset, offset))
+            .vertical_line_relative(bar_height as u32);
 
         paths.push(p);
     }
-    let s = s
+
+    let s = Element::svg()
         .css(&{
             let primary = theme.palette.primary.visit_return();
             let secondary = theme.palette.seconday.visit_return();
@@ -189,6 +215,9 @@ fn barchart(
             --stroke: {neutral};
             --black: oklch(40% 0.13 80);
         }}
+        svg {{
+            background: red;
+        }}
         path.hover {{
             fill: var(--primary);
             // stroke: var(--stroke);
@@ -202,7 +231,7 @@ fn barchart(
         })
         .version("2")
         .push_vec(paths)
-        .size(Percent(20), Percent(20))
+        .size(400, 400)
         .preserv_aspect_ratio(
             svg_maker::units::AlignAspectRatio::XMidYMid,
             svg_maker::units::MeetOrSlice::Meet,
