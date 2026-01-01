@@ -35,17 +35,17 @@ pub struct Svg {
     children: Vec<Box<dyn BaseElement>>,
 }
 
-impl Svg {
-    pub fn new() -> Self {
-        Self::default()
+impl Element<Svg> {
+    pub fn svg() -> Self {
+        Element::new(Svg::default())
     }
-
     /// Sets the size of the svg, if width or height is less or equal to zero it will be ignored.
     /// ```
     /// # use svg_maker::Svg;
+    /// # use svg_maker::element::Element;
     /// use svg_maker::units::Percent;
-    /// let svg = Svg::new().size(Percent(20), 10);
-    /// let rendered = svg.render();
+    /// let svg = Element::svg().size(Percent(20), 10);
+    /// let rendered = svg.render(None);
     /// assert!(rendered.contains(r#"width="20%""#));
     /// assert!(rendered.contains(r#"height="10""#));
     /// ```
@@ -68,8 +68,9 @@ impl Svg {
     /// Sets the svg version
     /// ```
     /// # use svg_maker::Svg;
-    /// let svg = Svg::new().version("2");
-    /// let rendered = svg.render();
+    /// # use svg_maker::element::Element;
+    /// let svg = Element::svg().version("2");
+    /// let rendered = svg.render(None);
     /// assert!(rendered.contains(r#"version="2""#));
     /// ```
     pub fn version(mut self, version: &str) -> Self {
@@ -157,46 +158,9 @@ impl Svg {
         self
     }
 
-    #[must_use]
-    pub fn render(&self) -> String {
-        let mut buffer = Buffer::with_capacity(100);
-        buffer.opts.optimizations.remove_unit_for_px = true;
-        buffer.push_tag("svg");
-        buffer.push_attr_opt("width", &self.w);
-        buffer.push_attr_opt("height", &self.h);
-        buffer.push_attr_opt("viewbox", &self.viewbox);
-        if let Some(PreserveAspectRatio { alignment, .. }) = &self.preserve_aspect_ratio
-            && *alignment != AlignAspectRatio::None
-        {
-            buffer.push_attr_opt("preserveAspectRatio", &self.preserve_aspect_ratio);
-        }
-        buffer.push_attr("version", &self.version);
-        buffer.push_attr("xmlns", &self.namespace);
-        buffer.push_tag_end();
-        if let Some(css) = &self.css {
-            buffer.push_tag("style");
-            buffer.push_tag_end();
-            buffer.push_str(css);
-            buffer.push_tag_close("style");
-        }
-        if !self.defs.is_empty() {
-            buffer.push_tag("defs");
-            buffer.push_tag_end();
-            for def in &self.defs {
-                def.visit(&mut buffer);
-            }
-            buffer.push_tag_close("defs");
-        }
-        for element in &self.children {
-            element.visit(&mut buffer);
-        }
-        buffer.push_tag_close("svg");
-        buffer.str().to_string()
-    }
-
     pub fn render_to_file(&self, path: &str) -> Result<(), Box<dyn Error>> {
         let mut f = File::create(path)?;
-        f.write_all(self.render().as_bytes())?;
+        f.write_all(self.render(None).as_bytes())?;
         Ok(())
     }
 
@@ -248,7 +212,7 @@ impl Svg {
   </body>
 </html>
         "##,
-            self.render()
+            self.render(None)
         );
         f.write_all(buf.as_bytes())?;
         Ok(())
@@ -267,6 +231,55 @@ impl Svg {
             }
         }
         None
+    }
+}
+
+impl Visit for Svg {
+    fn visit(&self, buffer: &mut Buffer) {
+        buffer.opts.optimizations.remove_unit_for_px = true;
+        buffer.push_tag("svg");
+        buffer.push_attr_opt("width", &self.w);
+        buffer.push_attr_opt("height", &self.h);
+        buffer.push_attr_opt("viewbox", &self.viewbox);
+        if let Some(PreserveAspectRatio { alignment, .. }) = &self.preserve_aspect_ratio
+            && *alignment != AlignAspectRatio::None
+        {
+            buffer.push_attr_opt("preserveAspectRatio", &self.preserve_aspect_ratio);
+        }
+        buffer.push_attr("version", &self.version);
+        buffer.push_attr("xmlns", &self.namespace);
+        buffer.push_tag_end();
+        if let Some(css) = &self.css {
+            buffer.push_tag("style");
+            buffer.push_tag_end();
+            buffer.push_str(css);
+            buffer.push_tag_close("style");
+        }
+        if !self.defs.is_empty() {
+            buffer.push_tag("defs");
+            buffer.push_tag_end();
+            for def in &self.defs {
+                def.visit(buffer);
+            }
+            buffer.push_tag_close("defs");
+        }
+        for element in &self.children {
+            element.visit(buffer);
+        }
+        buffer.push_tag_close("svg");
+    }
+}
+
+impl Svg {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    #[must_use]
+    pub fn render(&self) -> String {
+        let mut buffer = Buffer::with_capacity(100);
+        self.visit(&mut buffer);
+        buffer.str().to_string()
     }
 }
 
@@ -383,7 +396,7 @@ mod tests {
 
     #[test]
     fn get_element_by_id() {
-        let mut s = Svg::new().push(Element::path().id("test_id"));
+        let mut s = Element::svg().push(Element::path().id("test_id"));
         let path = s.get_element_by_id_mut::<Path>("test_id");
         assert!(path.is_some());
         assert_eq!(path.unwrap().id.as_ref().unwrap(), &"test_id".to_string());

@@ -15,7 +15,7 @@ use svg_maker::{
 fn main() {
     let e = Element::line(10, 10, 100, 100);
 
-    let s = Svg::new()
+    let s = Element::svg()
         .viewbox(0, 0, 400, 400)
         .css(
             r#"
@@ -61,7 +61,7 @@ fn main() {
         "{}",
         barchart(&v, &BarChartOpts::default(), &Theme::default())
             .unwrap()
-            .render()
+            .render(None)
     );
     let _ = barchart(&v, &BarChartOpts::default(), &Theme::default())
         .unwrap()
@@ -138,7 +138,11 @@ impl Default for BarChartOpts {
     }
 }
 
-fn barchart(values: &[i32], opts: &BarChartOpts, theme: &Theme) -> Result<Svg, Box<dyn Error>> {
+fn barchart(
+    values: &[i32],
+    opts: &BarChartOpts,
+    theme: &Theme,
+) -> Result<Element<Svg>, Box<dyn Error>> {
     let len = values.len() as u32;
     const SIZE: u32 = 400;
     let max_bar_width = 100;
@@ -146,7 +150,7 @@ fn barchart(values: &[i32], opts: &BarChartOpts, theme: &Theme) -> Result<Svg, B
     //     return Err("min bar width".into());
     // }
     let padding = Px::from(20);
-    let mut s = Svg::new();
+    let mut s = Element::svg();
     let mut paths = vec![];
     for (i, v) in values.iter().enumerate() {
         let start = (i as f64 + 25.) + (i as f64 * 75.);
