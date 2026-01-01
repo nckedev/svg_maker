@@ -254,7 +254,10 @@ impl Svg {
         Ok(())
     }
 
-    pub fn get_element_by_id<T: Visit + 'static>(&mut self, id: &str) -> Option<&mut Element<T>> {
+    pub fn get_element_by_id_mut<T: Visit + 'static>(
+        &mut self,
+        id: &str,
+    ) -> Option<&mut Element<T>> {
         // TODO: include defs here?
         for el in &mut self.children {
             if let Some(el_ref) = el.as_any_mut().downcast_mut::<Element<T>>()
@@ -288,6 +291,7 @@ impl Default for Svg {
     }
 }
 
+#[derive(Clone, Copy, Debug, Default)]
 struct Viewbox {
     x: f64,
     y: f64,
@@ -303,19 +307,36 @@ impl Visit for Viewbox {
 }
 
 #[derive(Default, Debug)]
-pub(crate) struct Options {
-    pub(crate) invert_y: bool,
-    pub(crate) optimizations: Optimizations,
-    pub(crate) container_size: f64,
+pub struct Options {
+    pub invert_y: bool,
+    pub optimizations: Optimizations,
 }
 
-#[derive(Default, Debug)]
-pub(crate) struct Optimizations {
-    pub(crate) remove_unit_for_px: bool,
-    pub(crate) remove_unit_for_deg: bool,
-    pub(crate) convert_ms_to_s_if_shorter: bool,
-    pub(crate) remove_newline: bool,
-    pub(crate) remove_indent: bool,
+#[derive(Debug)]
+pub struct Optimizations {
+    pub remove_unit_for_px: bool,
+    pub remove_unit_for_deg: bool,
+    pub convert_ms_to_s_if_shorter: bool,
+    pub remove_newline: bool,
+    pub remove_indent: bool,
+}
+
+impl Default for Optimizations {
+    /// default configuration for optimizations
+    /// remove_unit_for_px: true,
+    /// remove_unit_for_deg: true,
+    /// convert_ms_to_s_if_shorter: false,
+    /// remove_newline: false,
+    /// remove_indent: false,
+    fn default() -> Self {
+        Self {
+            remove_unit_for_px: true,
+            remove_unit_for_deg: true,
+            convert_ms_to_s_if_shorter: false,
+            remove_newline: false,
+            remove_indent: false,
+        }
+    }
 }
 
 // Raw ======================================
@@ -351,10 +372,11 @@ mod tests {
     #[test]
     fn get_element_by_id() {
         let mut s = Svg::new().push(Element::path().id("test_id"));
-        let path = s.get_element_by_id::<Path>("test_id");
+        let path = s.get_element_by_id_mut::<Path>("test_id");
         assert!(path.is_some());
         assert_eq!(path.unwrap().id.as_ref().unwrap(), &"test_id".to_string());
-        let path = s.get_element_by_id::<Path>("this_id_doesnt_exist");
+
+        let path = s.get_element_by_id_mut::<Path>("this_id_doesnt_exist");
         assert!(path.is_none());
     }
 }

@@ -1,9 +1,11 @@
-use crate::{Options, visit::Visit};
+use crate::{Options, Viewbox, visit::Visit};
 
 pub struct Buffer {
     inner: String,
     tabs: u32,
     pub(crate) opts: Options,
+    pub(crate) warnings: Vec<String>,
+    pub(crate) viewbox: Viewbox,
 }
 
 impl Buffer {
@@ -12,6 +14,8 @@ impl Buffer {
             inner: String::with_capacity(cap),
             opts: Options::default(),
             tabs: 0,
+            warnings: Vec::new(),
+            viewbox: Viewbox::default(),
         }
     }
 
@@ -60,6 +64,8 @@ impl Buffer {
         }
     }
 
+    pub fn push_attr_if(&mut self, attr: &str, value: &impl Visit, pred: impl Fn() -> bool) {}
+
     pub fn push_str(&mut self, str: &str) {
         self.inner.push_str(str);
     }
@@ -78,8 +84,9 @@ impl Buffer {
         }
     }
 
+    #[allow(clippy::bool_comparison)]
     fn push_newline(&mut self) {
-        if !self.opts.optimizations.remove_newline {
+        if self.opts.optimizations.remove_newline == false {
             self.inner.push('\n');
         }
     }
@@ -94,5 +101,14 @@ impl Buffer {
 
     pub fn pop(&mut self) {
         self.inner.pop();
+    }
+
+    pub fn push_warning(&mut self, warning: &str) {
+        self.warnings.push(format!(
+            "warning file: {}, line {}, {}",
+            file!(),
+            line!(),
+            warning
+        ));
     }
 }

@@ -69,7 +69,7 @@ mod tests {
     fn rect() {
         let rect = Element::rect(10, Percent(20), Px(20.), 20)
             .corner_radius(10.)
-            .render();
+            .render(None);
         let expected =
             r#"<rect x="10px" y="20%" width="20px" height="20px" rx="10px"/>"#.to_string() + "\n";
         assert_eq!(rect, expected)

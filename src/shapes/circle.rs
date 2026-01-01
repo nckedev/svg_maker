@@ -42,7 +42,7 @@ mod tests {
 
     #[test]
     fn circle() {
-        let c = Element::circle(10, Percent(10), Px(10.)).render();
+        let c = Element::circle(10, Percent(10), Px(10.)).render(None);
         let expected = r#"<circle cx="10px" cy="10%" r="10px"/>"#.to_string() + "\n";
         assert_eq!(c, expected);
     }

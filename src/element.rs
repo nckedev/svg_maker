@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::{
-    Shape,
+    Options, Shape,
     buffer::Buffer,
     color::Color,
     marker_traits::{BaseElement, BaseStyle, Hx, OpenEndedShape},
@@ -106,8 +106,11 @@ impl<T: Visit> Element<T> {
         self
     }
 
-    pub fn render(&self) -> String {
+    pub fn render(&self, opts: Option<Options>) -> String {
         let mut buffer = Buffer::with_capacity(100);
+        if let Some(opt) = opts {
+            buffer.opts = opt;
+        }
         self.visit(&mut buffer);
         buffer.str().to_string()
     }

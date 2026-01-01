@@ -55,12 +55,16 @@ impl<T: Num + Into<f64>> From<T> for YCoord {
 
 impl Visit for YCoord {
     fn visit(&self, buffer: &mut Buffer) {
-        if buffer.opts.invert_y {
-            let v = buffer.opts.container_size - self.0;
-            buffer.push_str(&v.to_string());
+        let value = if buffer.opts.invert_y {
+            debug_assert!(
+                buffer.viewbox.y != 0.,
+                "viewbox must be set for invert_y to work"
+            );
+            buffer.viewbox.y - self.0
         } else {
-            buffer.push_str(&self.0.to_string());
-        }
+            self.0
+        };
+        buffer.push_str(&value.to_string());
     }
 }
 
