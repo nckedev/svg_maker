@@ -271,23 +271,24 @@ impl Visit for HxData {
 
 pub enum Transform {
     // x,y y is assumed 0 if leftout
-    Translate(i32, i32),
-    TranslateX(i32),
-    TranslateY(i32),
+    Translate(f64, f64),
+    TranslateX(f64),
+    TranslateY(f64),
     // x,y y is assumed same as x if leftout
-    Scale(i32, i32),
-    ScaleX(i32),
-    ScaleY(i32),
-    ScaleXY(i32),
+    Scale(f64, f64),
+    ScaleX(f64),
+    ScaleY(f64),
+    ScaleXY(f64),
     // angle, x, y x and y can be leftout then the rotateion is around the origin of the current
     // corrd system
-    RotateXY(f32, i32, i32),
-    Rotate(f32),
+    RotateXY(f64, f64, f64),
+    Rotate(f64),
     // angle
-    SkewX(f32),
+    SkewX(f64),
     // angle
-    SkewY(f32),
+    SkewY(f64),
 
+    // TODO: ..
     Matrix(i32, i32, i32, i32, i32, i32),
 }
 
