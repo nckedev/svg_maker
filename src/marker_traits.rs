@@ -25,16 +25,12 @@ pub trait BaseElement: Visit + Any {
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
     fn get_id(&self) -> Option<&str>;
-    fn from_shape<S>(shape: S) -> Element<S>
-    where
-        S: Sized + Visit + Shape,
-        Self: Sized;
 }
 
 pub trait Shape {
     fn into_element(self) -> Element<Self>
     where
-        Self: Sized + Visit,
+        Self: Sized + Visit + ElementKind,
     {
         Element::new(self)
     }
@@ -43,6 +39,8 @@ pub trait Shape {
 pub trait Animate {}
 
 pub trait RootElement {}
+
+pub trait ElementKind {}
 
 pub trait Hx {}
 

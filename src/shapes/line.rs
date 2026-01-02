@@ -2,7 +2,7 @@ use svg_maker_derive::*;
 
 use crate::{buffer::Buffer, element::Element, units::Length, visit::Visit};
 
-#[derive(Default, BaseStyle, OpenEndedShape, Hx)]
+#[derive(Default, BaseStyle, OpenEndedShape, Hx, ElementKind)]
 pub struct Line {
     x1: Length,
     y1: Length,

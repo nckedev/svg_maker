@@ -22,7 +22,7 @@ pub mod style;
 pub mod units;
 pub mod visit;
 
-#[derive(BaseStyle, ContainerElement)]
+#[derive(BaseStyle, ContainerElement, ElementKind)]
 pub struct Svg {
     w: Option<Length>,
     h: Option<Length>,

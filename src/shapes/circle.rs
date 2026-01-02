@@ -2,7 +2,7 @@ use svg_maker_derive::*;
 
 use crate::{Shape, element::Element, units::Length, visit::Visit};
 
-#[derive(BaseStyle, Shape)]
+#[derive(BaseStyle, Shape, ElementKind)]
 pub struct Circle {
     cx: Length,
     cy: Length,

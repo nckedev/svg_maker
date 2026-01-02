@@ -24,7 +24,7 @@ pub struct Element<T: Sized> {
     pub(crate) kind: T,
 }
 
-impl<T: Shape + Visit> From<T> for Element<T> {
+impl<T: ElementKind + Visit> From<T> for Element<T> {
     fn from(value: T) -> Self {
         Element::new(value)
     }
@@ -41,13 +41,6 @@ impl<T: Visit + 'static> BaseElement for Element<T> {
 
     fn get_id(&self) -> Option<&str> {
         self.id.as_deref()
-    }
-
-    fn from_shape<S>(shape: S) -> Element<S>
-    where
-        S: Sized + Visit + Shape,
-    {
-        Element::from(shape)
     }
 }
 
@@ -79,7 +72,7 @@ impl<T: Visit> Visit for Element<T> {
     }
 }
 
-impl<T: Visit> Element<T> {
+impl<T: ElementKind + Visit> Element<T> {
     pub fn new(kind: T) -> Self {
         Self {
             id: None,

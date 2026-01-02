@@ -6,7 +6,7 @@ use crate::{
 };
 use svg_maker_derive::*;
 
-#[derive(BaseStyle, Shape)]
+#[derive(BaseStyle, Shape, ElementKind)]
 pub struct Path {
     pub path: Vec<Command>,
 }

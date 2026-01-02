@@ -1,4 +1,4 @@
-use svg_maker_derive::{BaseStyle, Hx, Shape};
+use svg_maker_derive::{BaseStyle, ElementKind, Hx, Shape};
 
 use crate::{
     buffer::Buffer,
@@ -7,7 +7,7 @@ use crate::{
     visit::Visit,
 };
 
-#[derive(Default, Hx, Shape, BaseStyle)]
+#[derive(Default, Hx, Shape, BaseStyle, ElementKind)]
 pub struct Use {
     x: XCoord,
     y: YCoord,

@@ -1,8 +1,8 @@
-use svg_maker_derive::{BaseStyle, ClosedShape};
+use svg_maker_derive::{BaseStyle, ClosedShape, ElementKind};
 
 use crate::{buffer::Buffer, element::Element, units::Length, visit::Visit};
 
-#[derive(Default, BaseStyle, ClosedShape)]
+#[derive(Default, BaseStyle, ClosedShape, ElementKind)]
 pub struct Rect {
     x: Length,
     y: Length,
