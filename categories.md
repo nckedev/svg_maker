@@ -6,6 +6,9 @@ Animation elements
 Basic shapes
 <circle>, <ellipse>, <line>, <polygon>, <polyline>, <rect>
 
+Shape elements
+<circle>, <ellipse>, <line>, <polygon>, <polyline>, <rect>, <path>
+
 Container elements
 <a>, <defs>, <g>, <marker>, <mask>, <pattern>, <svg>, <switch>, <symbol>
 
@@ -35,9 +38,6 @@ Paint server elements
 Renderable elements
 <a>, <circle>, <ellipse>, <foreignObject>, <g>, <image>, <line>, <path>, <polygon>, <polyline>, <rect>, <svg>, <switch>, <symbol>, <text>, <textPath>, <tspan>, <use>
 
-Shape elements
-<circle>, <ellipse>, <line>, <path>, <polygon>, <polyline>, <rect>
-
 Structural elements
 <defs>, <g>, <svg>, <symbol>, <use>
 
@@ -49,3 +49,12 @@ Text content child elements
 
 Uncategorized elements
 <clipPath>, <filter>, <foreignObject>, <script>, <style>, <view>
+
+
+An svg and group element can hold these elements, is this all of them?
+Animation elements
+Descriptive elements
+Shape elements
+Structural elements
+Gradient elements
+<a>, <clipPath>, <filter>, <foreignObject>, <image>, <marker>, <mask>, <pattern>, <script>, <style>, <switch>, <text>, <view>
