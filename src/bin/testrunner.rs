@@ -38,6 +38,7 @@ fn main() {
                 .stroke_linejoin(LineJoin::Round)
                 .fill(Color::Black),
         )
+        .def(Element::line(12, 23, 123, 12).id("id"))
         .push(
             Element::use_href(1, 2)
                 .height(400)
@@ -57,7 +58,7 @@ fn main() {
 
     let v = [100, 100, 130, 350, 40];
     println!(
-        "{}",
+        "barchart: \n {}",
         barchart(&v, &BarChartOpts::default(), &Theme::default())
             .unwrap()
             .render(None)

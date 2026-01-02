@@ -1,6 +1,6 @@
 use crate::{Visit, buffer::Buffer, color::Color, units::Length};
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Style {
     pub fill: Option<Color>,
     pub fill_opacity: Option<f32>,
@@ -68,6 +68,7 @@ impl Visit for Style {
     }
 }
 
+#[derive(Debug)]
 pub enum FillRule {
     NonZero,
     EvenOdd,
@@ -83,6 +84,7 @@ impl Visit for FillRule {
     }
 }
 
+#[derive(Debug)]
 pub enum LineCap {
     Butt,
     Round,
@@ -100,6 +102,7 @@ impl Visit for LineCap {
     }
 }
 
+#[derive(Debug)]
 pub enum LineJoin {
     Miter,
     Round,

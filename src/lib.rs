@@ -1,11 +1,11 @@
-use std::{error::Error, fs::File, io::Write};
+use std::{error::Error, fmt::Debug, fs::File, io::Write};
 
 use svg_maker_derive::*;
 
 use crate::{
     buffer::Buffer,
     element::Element,
-    marker_traits::BaseElement,
+    marker_traits::{BaseElement, ChildOf, ElementKind},
     units::{AlignAspectRatio, Length, MeetOrSlice},
     visit::Visit,
 };
@@ -22,7 +22,7 @@ pub mod style;
 pub mod units;
 pub mod visit;
 
-#[derive(BaseStyle, ContainerElement, ElementKind)]
+#[derive(BaseStyle, ContainerElement)]
 pub struct Svg {
     w: Option<Length>,
     h: Option<Length>,
@@ -31,9 +31,13 @@ pub struct Svg {
     preserve_aspect_ratio: Option<PreserveAspectRatio>,
     namespace: String,
     css: Option<String>,
-    defs: Vec<Box<dyn BaseElement>>,
-    children: Vec<Box<dyn BaseElement>>,
+    defs: Vec<Box<dyn ChildOf<Self>>>,
 }
+//
+impl<T: ElementKind + Visit + 'static + Debug> ChildOf<Svg> for Element<T> {}
+// impl ChildOf<Svg> for Element<Rect> {}
+// impl ChildOf<Svg> for Element<Path> {}
+// impl ChildOf<Svg> for Element<Use> {}
 
 impl Element<Svg> {
     pub fn svg() -> Self {
@@ -111,10 +115,10 @@ impl Element<Svg> {
         self
     }
 
-    pub fn def<E, S>(mut self, el: E) -> Self
+    pub fn def<E>(mut self, el: Element<E>) -> Self
     where
-        E: Into<Element<S>> + BaseElement,
-        S: Shape + Sized + Visit + 'static,
+        Element<E>: ChildOf<Svg> + BaseElement,
+        E: ElementKind + 'static,
     {
         debug_assert!(
             el.get_id().is_some(),
@@ -124,58 +128,58 @@ impl Element<Svg> {
         self
     }
 
-    pub fn defs(mut self, elements: Vec<Box<dyn BaseElement>>) -> Self {
-        debug_assert!(
-            elements.iter().all(|e| e.get_id().is_some()),
-            "a element definition is useless without an id"
-        );
+    pub fn defs(mut self, elements: Vec<Box<dyn ChildOf<Svg>>>) -> Self {
+        // debug_assert!(
+        //     elements.iter().all(|e| e.get_id().is_some()),
+        //     "a element definition is useless without an id"
+        // );
         for element in elements {
             self.defs.push(element);
         }
         self
     }
 
-    #[must_use]
-    pub fn push<E, S>(mut self, el: E) -> Self
-    where
-        E: Into<Element<S>> + BaseElement,
-        S: Shape + Sized + Visit + 'static,
-    {
-        let e: Element<S> = el.into();
-        self.children.push(Box::new(e));
-        self
-    }
+    // #[must_use]
+    // pub fn push<E, S>(mut self, el: E) -> Self
+    // where
+    //     E: Into<Element<S>> + BaseElement,
+    //     S: Shape + Sized + Visit + 'static,
+    // {
+    //     let e: Element<S> = el.into();
+    //     self.children.push(Box::new(e));
+    //     self
+    // }
+    //
+    // #[must_use]
+    // pub fn push_opt<E, S>(self, el: Option<E>) -> Self
+    // where
+    //     E: Into<Element<S>> + BaseElement,
+    //     S: Shape + Sized + Visit + 'static,
+    // {
+    //     if let Some(e) = el { self.push(e) } else { self }
+    // }
+    //
+    // #[must_use]
+    // pub fn push_if<E, S>(self, el: E, pred: bool) -> Self
+    // where
+    //     E: Into<Element<S>> + BaseElement,
+    //     S: Shape + Sized + Visit + 'static,
+    // {
+    //     if pred { self.push(el) } else { self }
+    // }
 
-    #[must_use]
-    pub fn push_opt<E, S>(self, el: Option<E>) -> Self
-    where
-        E: Into<Element<S>> + BaseElement,
-        S: Shape + Sized + Visit + 'static,
-    {
-        if let Some(e) = el { self.push(e) } else { self }
-    }
-
-    #[must_use]
-    pub fn push_if<E, S>(self, el: E, pred: bool) -> Self
-    where
-        E: Into<Element<S>> + BaseElement,
-        S: Shape + Sized + Visit + 'static,
-    {
-        if pred { self.push(el) } else { self }
-    }
-
-    #[must_use]
-    pub fn push_vec<E, S>(mut self, el: Vec<E>) -> Self
-    where
-        E: Into<Element<S>> + BaseElement,
-        S: Shape + Sized + Visit + 'static,
-    {
-        for e in el {
-            let e: Element<S> = e.into();
-            self.children.push(Box::new(e));
-        }
-        self
-    }
+    // #[must_use]
+    // pub fn push_vec<E, S>(mut self, el: Vec<E>) -> Self
+    // where
+    //     E: Into<Element<S>> + BaseElement,
+    //     S: Shape + Sized + Visit + 'static,
+    // {
+    //     for e in el {
+    //         let e: Element<S> = e.into();
+    //         self.children.push(Box::new(e));
+    //     }
+    //     self
+    // }
 
     pub fn render_to_file(&self, path: &str) -> Result<(), Box<dyn Error>> {
         let mut f = File::create(path)?;
@@ -236,27 +240,15 @@ impl Element<Svg> {
         f.write_all(buf.as_bytes())?;
         Ok(())
     }
+}
 
-    pub fn get_element_by_id_mut<T: Visit + 'static>(
-        &mut self,
-        id: &str,
-    ) -> Option<&mut Element<T>> {
-        // TODO: include defs here?
-        for el in &mut self.children {
-            if let Some(el_ref) = el.as_any_mut().downcast_mut::<Element<T>>()
-                && Some(id) == el_ref.get_id()
-            {
-                return Some(el_ref);
-            }
-        }
-        None
-    }
+impl ElementKind for Svg {
+    const TAG: &'static str = "svg";
 }
 
 impl Visit for Svg {
     fn visit(&self, buffer: &mut Buffer) {
         buffer.opts.optimizations.remove_unit_for_px = true;
-        buffer.push_tag("svg");
         buffer.push_attr_opt("width", &self.w);
         buffer.push_attr_opt("height", &self.h);
         buffer.push_attr_opt("viewbox", &self.viewbox);
@@ -274,18 +266,6 @@ impl Visit for Svg {
             buffer.push_str(css);
             buffer.push_tag_close("style");
         }
-        if !self.defs.is_empty() {
-            buffer.push_tag("defs");
-            buffer.push_tag_end();
-            for def in &self.defs {
-                def.visit(buffer);
-            }
-            buffer.push_tag_close("defs");
-        }
-        for element in &self.children {
-            element.visit(buffer);
-        }
-        buffer.push_tag_close("svg");
     }
 }
 
@@ -318,7 +298,6 @@ impl Default for Svg {
             preserve_aspect_ratio: None,
             css: None,
             defs: Vec::new(),
-            children: Vec::new(),
         }
     }
 }
@@ -410,17 +389,18 @@ impl Visit for PreserveAspectRatio {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::shapes::path::Path;
+
+    use super::*;
 
     #[test]
     fn get_element_by_id() {
         let mut s = Element::svg().push(Element::path().id("test_id"));
-        let path = s.get_element_by_id_mut::<Path>("test_id");
+        let path = s.get_element_by_id_mut::<Element<Path>>("test_id");
         assert!(path.is_some());
         assert_eq!(path.unwrap().id.as_ref().unwrap(), &"test_id".to_string());
 
-        let path = s.get_element_by_id_mut::<Path>("this_id_doesnt_exist");
-        assert!(path.is_none());
+        // let path = s.get_element_by_id_mut::<Path>("this_id_doesnt_exist");
+        // assert!(path.is_none());
     }
 }

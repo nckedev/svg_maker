@@ -1,8 +1,10 @@
-use svg_maker_derive::{BaseStyle, ClosedShape, ElementKind};
+use svg_maker_derive::{BaseStyle, ClosedShape};
 
-use crate::{buffer::Buffer, element::Element, units::Length, visit::Visit};
+use crate::{
+    buffer::Buffer, element::Element, marker_traits::ElementKind, units::Length, visit::Visit,
+};
 
-#[derive(Default, BaseStyle, ClosedShape, ElementKind)]
+#[derive(Default, BaseStyle, ClosedShape)]
 pub struct Rect {
     x: Length,
     y: Length,
@@ -47,9 +49,12 @@ impl Element<Rect> {
     }
 }
 
+impl ElementKind for Rect {
+    const TAG: &'static str = "rect";
+}
+
 impl Visit for Rect {
     fn visit(&self, buffer: &mut Buffer) {
-        buffer.push_tag("rect");
         buffer.push_attr("x", &self.x);
         buffer.push_attr("y", &self.y);
         buffer.push_attr("width", &self.width);

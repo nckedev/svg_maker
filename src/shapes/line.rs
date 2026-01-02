@@ -1,8 +1,10 @@
 use svg_maker_derive::*;
 
-use crate::{buffer::Buffer, element::Element, units::Length, visit::Visit};
+use crate::{
+    buffer::Buffer, element::Element, marker_traits::ElementKind, units::Length, visit::Visit,
+};
 
-#[derive(Default, BaseStyle, OpenEndedShape, Hx, ElementKind)]
+#[derive(Debug, Default, BaseStyle, OpenEndedShape, Hx)]
 pub struct Line {
     x1: Length,
     y1: Length,
@@ -37,6 +39,10 @@ impl Element<Line> {
         let l = Line::new(x.into(), y.into(), w.into(), h.into());
         Element::new(l)
     }
+}
+
+impl ElementKind for Line {
+    const TAG: &'static str = "line";
 }
 impl Visit for Line {
     fn visit(&self, buffer: &mut Buffer) {

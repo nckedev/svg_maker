@@ -9,6 +9,7 @@ use num_traits::Num;
 
 use crate::{buffer::Buffer, visit::Visit};
 
+#[derive(Debug)]
 pub struct Coord(pub XCoord, pub YCoord);
 
 impl Visit for Coord {

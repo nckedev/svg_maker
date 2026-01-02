@@ -1,6 +1,7 @@
 use crate::{buffer::Buffer, visit::Visit};
 
 #[allow(clippy::enum_variant_names)] // warns on currentcolor otherwise
+#[derive(Debug)]
 pub enum Color {
     Red,
     Black,

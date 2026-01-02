@@ -1,12 +1,16 @@
 use svg_maker_derive::*;
 
-use crate::{Shape, element::Element, units::Length, visit::Visit};
+use crate::{Shape, element::Element, marker_traits::ElementKind, units::Length, visit::Visit};
 
-#[derive(BaseStyle, Shape, ElementKind)]
+#[derive(BaseStyle, Shape)]
 pub struct Circle {
     cx: Length,
     cy: Length,
     radius: Length,
+}
+
+impl ElementKind for Circle {
+    const TAG: &'static str = "circle";
 }
 
 impl Element<Circle> {
@@ -27,7 +31,6 @@ impl Element<Circle> {
 
 impl Visit for Circle {
     fn visit(&self, buffer: &mut crate::buffer::Buffer) {
-        buffer.push_tag("circle");
         buffer.push_attr("cx", &self.cx);
         buffer.push_attr("cy", &self.cy);
         buffer.push_attr("r", &self.radius);

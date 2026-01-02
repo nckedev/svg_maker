@@ -1,12 +1,13 @@
 use crate::{
     buffer::Buffer,
     element::Element,
+    marker_traits::ElementKind,
     units::{Coord, XCoord, YCoord},
     visit::Visit,
 };
 use svg_maker_derive::*;
 
-#[derive(BaseStyle, Shape, ElementKind)]
+#[derive(Debug, BaseStyle, Shape)]
 pub struct Path {
     pub path: Vec<Command>,
 }
@@ -22,7 +23,7 @@ impl Element<Path> {
         Element::from(Path::new())
     }
 
-    pub fn push(mut self, command: Command) -> Self {
+    pub fn push_path(mut self, command: Command) -> Self {
         self.path.push(command);
         self
     }
@@ -119,13 +120,17 @@ impl Default for Path {
     }
 }
 
+impl ElementKind for Path {
+    const TAG: &'static str = "path";
+}
+
 impl Visit for Path {
     fn visit(&self, buffer: &mut Buffer) {
-        buffer.push_tag("path");
         buffer.push_attr("d", &self.path);
     }
 }
 
+#[derive(Debug)]
 pub enum Command {
     MoveTo(Coord),
     MoveToRelative(Coord),

@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use std::any::Any;
+use std::{any::Any, fmt::Debug};
 
 use crate::{Visit, element::Element};
 
@@ -37,10 +37,19 @@ pub trait Shape {
 }
 
 pub trait Animate {}
+pub trait Descriptive {}
+
+pub trait ChildOf<T: Visit + ElementKind>: Any
+where
+    Self: Visit + Debug,
+{
+}
 
 pub trait RootElement {}
 
-pub trait ElementKind {}
+pub trait ElementKind {
+    const TAG: &'static str;
+}
 
 pub trait Hx {}
 

@@ -1,13 +1,14 @@
-use svg_maker_derive::{BaseStyle, ElementKind, Hx, Shape};
+use svg_maker_derive::{BaseStyle, Hx, Shape};
 
 use crate::{
     buffer::Buffer,
     element::Element,
+    marker_traits::ElementKind,
     units::{Length, XCoord, YCoord},
     visit::Visit,
 };
 
-#[derive(Default, Hx, Shape, BaseStyle, ElementKind)]
+#[derive(Debug, Default, Hx, Shape, BaseStyle)]
 pub struct Use {
     x: XCoord,
     y: YCoord,
@@ -69,6 +70,10 @@ impl Element<Use> {
         self.width = width.into();
         self
     }
+}
+
+impl ElementKind for Use {
+    const TAG: &'static str = "use";
 }
 
 impl Visit for Use {

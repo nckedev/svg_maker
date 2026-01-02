@@ -1,5 +1,6 @@
 use std::{
     any::Any,
+    fmt::Debug,
     ops::{Deref, DerefMut},
 };
 
@@ -8,12 +9,14 @@ use crate::{
     buffer::Buffer,
     color::Color,
     marker_traits::*,
+    shapes::path::Path,
     style::{FillRule, LineCap, LineJoin, Style},
     units::Length,
     visit::Visit,
 };
 
-pub struct Element<T: Sized> {
+#[derive(Debug)]
+pub struct Element<T> {
     pub id: Option<String>,
     class: Option<String>,
     /// NOTE: this style object contains all possible styles, and some might not be applicable to
@@ -22,6 +25,7 @@ pub struct Element<T: Sized> {
     transforms: Option<Vec<Transform>>,
     hx: Option<HxData>,
     pub(crate) kind: T,
+    children: Vec<Box<dyn ChildOf<T>>>,
 }
 
 impl<T: ElementKind + Visit> From<T> for Element<T> {
@@ -30,7 +34,7 @@ impl<T: ElementKind + Visit> From<T> for Element<T> {
     }
 }
 
-impl<T: Visit + 'static> BaseElement for Element<T> {
+impl<T: Visit + 'static + ElementKind> BaseElement for Element<T> {
     fn as_any(&self) -> &dyn Any {
         self
     }
@@ -58,8 +62,9 @@ impl<T> DerefMut for Element<T> {
     }
 }
 
-impl<T: Visit> Visit for Element<T> {
+impl<T: Visit + ElementKind> Visit for Element<T> {
     fn visit(&self, buffer: &mut Buffer) {
+        buffer.push_tag(T::TAG);
         self.kind.visit(buffer);
         buffer.push_attr_opt("id", &self.id);
         buffer.push_attr_opt("class", &self.class);
@@ -68,7 +73,35 @@ impl<T: Visit> Visit for Element<T> {
         self.style.visit(buffer);
         //TODO: if the element has child elementes like animations, include them before closing, if not do a
         //selfclose tag
-        buffer.push_tag_self_close();
+        if self.children.is_empty() {
+            buffer.push_tag_self_close();
+        } else {
+            for child in &self.children {
+                child.visit(buffer);
+            }
+            buffer.push_tag_close(T::TAG);
+        }
+    }
+}
+
+impl<T> Element<T>
+where
+    Self: Visit,
+    T: Visit + ElementKind + Any + 'static,
+{
+    pub fn get_element_by_id_mut<U: ChildOf<T>>(&mut self, id: &str) -> Option<&mut U> {
+        eprintln!("{:#?}", self.children);
+        for child in &mut self.children {
+            let c = child as &mut dyn Any;
+            let ch = c.downcast_mut::<U>();
+            // dbg!(&ch);
+            if let Some(b) = ch
+            // && b.id == Some(id.to_string())
+            {
+                return Some(b);
+            }
+        }
+        None
     }
 }
 
@@ -81,7 +114,26 @@ impl<T: ElementKind + Visit> Element<T> {
             transforms: None,
             hx: None,
             kind,
+            children: vec![],
         }
+    }
+
+    pub fn push<U>(mut self, value: U) -> Self
+    where
+        U: ChildOf<T> + Visit + 'static,
+    {
+        self.children.push(Box::new(value));
+        self
+    }
+
+    pub fn push_vec<U>(mut self, value: Vec<U>) -> Self
+    where
+        U: ChildOf<T> + Visit + 'static,
+    {
+        for v in value {
+            self.children.push(Box::new(v) as Box<dyn ChildOf<T>>);
+        }
+        self
     }
 
     pub fn class(mut self, class: &str) -> Self {
@@ -216,7 +268,7 @@ impl<T: Hx> Element<T> {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 struct HxData {
     ext: Option<String>,
     connect: Option<String>,
@@ -262,6 +314,7 @@ impl Visit for HxData {
     }
 }
 
+#[derive(Debug)]
 pub enum Transform {
     // x,y y is assumed 0 if leftout
     Translate(f64, f64),
