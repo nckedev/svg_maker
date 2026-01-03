@@ -51,6 +51,10 @@ pub trait ElementKind {
     const TAG: &'static str;
 }
 
+impl ElementKind for String {
+    const TAG: &'static str = "STRING";
+}
+
 pub trait Hx {}
 
 ///<a>, <circle>, <ellipse>, <foreignObject>, <g>, <image>, <line>, <path>, <polygon>, <polyline>, <rect>, <svg>, <switch>, <symbol>, <text>, <textPath>, <tspan>, <use>

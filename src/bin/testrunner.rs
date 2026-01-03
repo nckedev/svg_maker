@@ -134,6 +134,7 @@ struct BarChartOpts {
     bad_threshold: Option<f64>,
     height: f64,
     width: f64,
+    legend_pos: LegendPos,
 }
 
 impl Default for BarChartOpts {
@@ -145,8 +146,17 @@ impl Default for BarChartOpts {
             bad_threshold: None,
             height: 100.,
             width: 100.,
+            legend_pos: LegendPos::default(),
         }
     }
+}
+
+#[derive(Default)]
+pub enum LegendPos {
+    Left,
+    Right,
+    #[default]
+    None,
 }
 
 fn barchart(

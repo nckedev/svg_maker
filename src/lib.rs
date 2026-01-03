@@ -116,7 +116,7 @@ impl Visit for PreserveAspectRatio {
 mod tests {
     use crate::{element::Element, shapes::path::Path};
 
-    use super::*;
+    // use super::*;
 
     #[test]
     fn get_element_by_id() {

@@ -4,4 +4,6 @@ pub mod line;
 pub mod path;
 pub mod rect;
 pub mod svg;
+pub mod text;
+pub mod tspan;
 pub mod use_href;

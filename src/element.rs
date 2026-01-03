@@ -63,6 +63,11 @@ impl<T> DerefMut for Element<T> {
 
 impl<T: Visit + ElementKind> Visit for Element<T> {
     fn visit(&self, buffer: &mut Buffer) {
+        // special case for naked strings, like inside <text> THIS STRING </text>.
+        if T::TAG == "STRING" {
+            self.kind.visit(buffer);
+            return;
+        }
         buffer.push_tag(T::TAG);
         self.kind.visit(buffer);
         buffer.push_attr_opt("id", &self.id);
