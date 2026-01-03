@@ -6,6 +6,7 @@ use crate::{
     buffer::Buffer,
     element::Element,
     marker_traits::{BaseElement, ChildOf, ElementKind},
+    shapes::{line::Line, rect::Rect},
     units::{AlignAspectRatio, Length, MeetOrSlice},
     visit::Visit,
 };
@@ -21,6 +22,13 @@ pub mod shapes;
 pub mod style;
 pub mod units;
 pub mod visit;
+
+#[macro_export]
+macro_rules! impl_childof {
+    ($type:ty, $($impl:ty),+ ) => {
+        $(impl $crate::marker_traits::ChildOf<$type> for $crate::element::Element<$impl> {} )+
+    };
+}
 
 #[derive(BaseStyle, ContainerElement)]
 pub struct Svg {

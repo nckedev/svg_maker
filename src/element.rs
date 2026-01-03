@@ -9,7 +9,6 @@ use crate::{
     buffer::Buffer,
     color::Color,
     marker_traits::*,
-    shapes::path::Path,
     style::{FillRule, LineCap, LineJoin, Style},
     units::Length,
     visit::Visit,
@@ -76,6 +75,7 @@ impl<T: Visit + ElementKind> Visit for Element<T> {
         if self.children.is_empty() {
             buffer.push_tag_self_close();
         } else {
+            buffer.push_tag_end();
             for child in &self.children {
                 child.visit(buffer);
             }
@@ -89,7 +89,7 @@ where
     Self: Visit,
     T: Visit + ElementKind + Any + 'static,
 {
-    pub fn get_element_by_id_mut<U: ChildOf<T>>(&mut self, id: &str) -> Option<&mut U> {
+    pub fn get_element_by_id_mut<U: ChildOf<T>>(&mut self, _id: &str) -> Option<&mut U> {
         eprintln!("{:#?}", self.children);
         for child in &mut self.children {
             let c = child as &mut dyn Any;
@@ -126,7 +126,7 @@ impl<T: ElementKind + Visit> Element<T> {
         self
     }
 
-    pub fn push_vec<U>(mut self, value: Vec<U>) -> Self
+    pub fn push_iter<U>(mut self, value: impl IntoIterator<Item = U>) -> Self
     where
         U: ChildOf<T> + Visit + 'static,
     {
@@ -158,6 +158,12 @@ impl<T: ElementKind + Visit> Element<T> {
         }
         self.visit(&mut buffer);
         buffer.str().to_string()
+    }
+
+    /// Returns the number of children the element have
+    #[allow(clippy::len_without_is_empty)]
+    pub fn len(&self) -> usize {
+        self.children.len()
     }
 }
 
@@ -341,13 +347,13 @@ pub enum Transform {
 impl Visit for Transform {
     fn visit(&self, buffer: &mut Buffer) {
         let str = match self {
-            Transform::Translate(x, y) => format!("tranlate({} {}) ", x, y),
-            Transform::TranslateX(x) => format!("tranlate({}) ", x),
-            Transform::TranslateY(y) => format!("tranlate(0 {}) ", y),
-            Transform::Scale(x, y) => format!("scale({} {}) ", x, y),
-            Transform::ScaleX(x) => format!("scale({} 1) ", x),
-            Transform::ScaleY(y) => format!("scale(1 {}) ", y),
-            Transform::ScaleXY(xy) => format!("scale({}) ", xy),
+            Transform::Translate(x, y) => format!("translate({} {})", x, y),
+            Transform::TranslateX(x) => format!("translate({})", x),
+            Transform::TranslateY(y) => format!("translate(0 {})", y),
+            Transform::Scale(x, y) => format!("scale({} {})", x, y),
+            Transform::ScaleX(x) => format!("scale({} 1)", x),
+            Transform::ScaleY(y) => format!("scale(1 {})", y),
+            Transform::ScaleXY(xy) => format!("scale({})", xy),
             _ => todo!("not yet implemented"),
         };
 

@@ -1,8 +1,16 @@
 use svg_maker_derive::{BaseStyle, ContainerElement};
 
-use crate::{element::Element, marker_traits::ElementKind, visit::Visit};
+use crate::{
+    element::Element,
+    impl_childof,
+    marker_traits::ElementKind,
+    shapes::{path::Path, rect::Rect},
+    visit::Visit,
+};
 
-#[derive(Default, ContainerElement, BaseStyle)]
+impl_childof!(Group, Rect, Path);
+
+#[derive(Debug, Default, ContainerElement, BaseStyle)]
 pub struct Group {}
 
 impl Element<Group> {
@@ -17,4 +25,25 @@ impl ElementKind for Group {
 
 impl Visit for Group {
     fn visit(&self, _buffer: &mut crate::buffer::Buffer) {}
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::Options;
+
+    use super::*;
+
+    #[test]
+    fn group() {
+        let e = Element::group()
+            .push(Element::rect(1, 2, 3, 4))
+            .push(Element::rect(2, 2, 2, 2));
+        assert_eq!(e.len(), 2);
+        let mut opt = Options::default();
+        opt.optimizations.remove_newline = true;
+        opt.optimizations.remove_indent = true;
+        let rendered = e.render(Some(opt));
+        let expected = r#"<g><rect x="1" y="2" width="3" height="4"/><rect x="2" y="2" width="2" height="2"/></g>"#;
+        assert_eq!(rendered, expected);
+    }
 }

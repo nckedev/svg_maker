@@ -5,7 +5,7 @@ use std::error::Error;
 use svg_maker::{
     Shape, Svg,
     color::{Color, Oklch},
-    element::Element,
+    element::{Element, Transform},
     shapes::path::Path,
     style::LineJoin,
     visit::Visit,
@@ -182,9 +182,7 @@ fn barchart(
             .into_element()
             .id(&format!("bar{}", i))
             .class("hover")
-            .stroke_width(2)
             // .stroke_dasharray(&[Percent(9), 2])
-            .stroke_linejoin(LineJoin::Round)
             .move_to(
                 start_x + ((spacing + (offset * 2 + topbar) as u32) * i as u32),
                 start_y,
@@ -197,14 +195,12 @@ fn barchart(
 
         paths.push(p);
     }
-
-    let s = Element::svg()
-        .css(&{
-            let primary = theme.palette.primary.visit_return();
-            let secondary = theme.palette.seconday.visit_return();
-            let neutral = theme.palette.neutral2.visit_return();
-            format!(
-                r#"
+    let css = &{
+        let primary = theme.palette.primary.visit_return();
+        let secondary = theme.palette.seconday.visit_return();
+        let neutral = theme.palette.neutral2.visit_return();
+        format!(
+            r#"
         :root {{
             --primary_hue: {primary};
             --secondary_hue: 24;
@@ -228,10 +224,13 @@ fn barchart(
             fill: var(--secondary);
         }}
     "#
-            )
-        })
+        )
+    };
+
+    let s = Element::svg()
+        .css(css)
         .version("2")
-        .push_vec(paths)
+        .push(Element::group().id("bars").push_iter(paths))
         .size(400, 400)
         .preserv_aspect_ratio(
             svg_maker::units::AlignAspectRatio::XMidYMid,

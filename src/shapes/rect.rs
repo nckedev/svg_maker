@@ -4,7 +4,7 @@ use crate::{
     buffer::Buffer, element::Element, marker_traits::ElementKind, units::Length, visit::Visit,
 };
 
-#[derive(Default, BaseStyle, ClosedShape)]
+#[derive(Debug, Default, BaseStyle, ClosedShape)]
 pub struct Rect {
     x: Length,
     y: Length,
