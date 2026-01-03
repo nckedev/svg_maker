@@ -1,5 +1,5 @@
 extern crate svg_maker;
-use svg_maker::Svg;
+use svg_maker::shapes::svg::Svg;
 
 #[test]
 fn testin() {

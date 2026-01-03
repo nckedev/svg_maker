@@ -3,10 +3,10 @@
 use std::error::Error;
 
 use svg_maker::{
-    Shape, Svg,
+    Shape,
     color::{Color, Oklch},
-    element::{Element, Transform},
-    shapes::path::Path,
+    element::Element,
+    shapes::{path::Path, svg::Svg},
     style::LineJoin,
     visit::Visit,
 };
