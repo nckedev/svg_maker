@@ -35,7 +35,7 @@ impl Element<Svg> {
 
     /// Sets the size of the svg, if width or height is less or equal to zero it will be ignored.
     /// ```
-    /// # use svg_maker::Svg;
+    /// # use svg_maker::shapes::svg::Svg;
     /// # use svg_maker::element::Element;
     /// use svg_maker::units::Percent;
     /// let svg = Element::svg().size(Percent(20), 10);
@@ -61,7 +61,7 @@ impl Element<Svg> {
 
     /// Sets the svg version
     /// ```
-    /// # use svg_maker::Svg;
+    /// # use svg_maker::shapes::svg::Svg;
     /// # use svg_maker::element::Element;
     /// let svg = Element::svg().version("2");
     /// let rendered = svg.render(None);

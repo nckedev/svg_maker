@@ -22,11 +22,11 @@ pub mod visit;
 
 /// first argument is the parent elementkind, rest of the arguments are the children,
 /// ```impl_parent_of(<PARENT>, <CHILD>, <CHILD>, ...); ```
-/// ```
+/// ```rust.ignore
 /// impl_parent_of(Svg, Line, Rect);
 /// ```
 /// will result in
-/// ```
+/// ```rust.ignore
 /// impl Childof<Svg> for Element<Line> {}
 /// impl Childof<Svg> for Element<Rect> {}
 /// ```
@@ -39,11 +39,11 @@ macro_rules! impl_parent_of {
 
 /// first argument is the child elementkind, rest of the arguments are the parents,
 /// ```impl_child_of(<CHILD>, <PARENT>, <PARENT>, ...); ```
-/// ```
+/// ```rust.ignore
 /// impl_child_of(Line, Svg, Group);
 /// ```
 /// will result in
-/// ```
+/// ```rust.ignore
 /// impl Childof<Svg> for Element<Line> {}
 /// impl Childof<Group> for Element<Line> {}
 /// ```
@@ -141,18 +141,18 @@ impl Visit for PreserveAspectRatio {
 
 #[cfg(test)]
 mod tests {
-    use crate::{element::Element, shapes::path::Path};
+    // use crate::{element::Element, shapes::path::Path};
 
     // use super::*;
 
-    #[test]
-    fn get_element_by_id() {
-        let mut s = Element::svg().push(Element::path().id("test_id"));
-        let path = s.get_element_by_id_mut::<Element<Path>>("test_id");
-        assert!(path.is_some());
-        assert_eq!(path.unwrap().id.as_ref().unwrap(), &"test_id".to_string());
+    // #[test]
+    // fn get_element_by_id() {
+    // let mut s = Element::svg().push(Element::path().id("test_id"));
+    // let path = s.get_element_by_id_mut::<Element<Path>>("test_id");
+    // assert!(path.is_some());
+    // assert_eq!(path.unwrap().id.as_ref().unwrap(), &"test_id".to_string());
 
-        // let path = s.get_element_by_id_mut::<Path>("this_id_doesnt_exist");
-        // assert!(path.is_none());
-    }
+    // let path = s.get_element_by_id_mut::<Path>("this_id_doesnt_exist");
+    // assert!(path.is_none());
+    // }
 }

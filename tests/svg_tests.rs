@@ -1,8 +1,9 @@
 extern crate svg_maker;
-use svg_maker::shapes::svg::Svg;
+use svg_maker::element::Element;
 
 #[test]
 fn testin() {
-    let s = Svg::new().render();
+    let s = Element::svg().render(None);
+    eprintln!("{s}");
     assert!(s.contains("<svg"))
 }

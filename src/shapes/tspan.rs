@@ -14,9 +14,8 @@ impl Deref for Tspan {
 
 #[cfg(test)]
 mod tests {
-    use std::char::ToLowercase;
 
-    use super::*;
+    // use super::*;
 
     #[test]
     fn tspan() {}
