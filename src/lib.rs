@@ -21,6 +21,7 @@ pub mod units;
 pub mod visit;
 
 /// first argument is the parent elementkind, rest of the arguments are the children,
+/// ```impl_parent_of(<PARENT>, <CHILD>, <CHILD>, ...); ```
 /// ```
 /// impl_parent_of(Svg, Line, Rect);
 /// ```
@@ -36,6 +37,16 @@ macro_rules! impl_parent_of {
     };
 }
 
+/// first argument is the child elementkind, rest of the arguments are the parents,
+/// ```impl_child_of(<CHILD>, <PARENT>, <PARENT>, ...); ```
+/// ```
+/// impl_child_of(Line, Svg, Group);
+/// ```
+/// will result in
+/// ```
+/// impl Childof<Svg> for Element<Line> {}
+/// impl Childof<Group> for Element<Line> {}
+/// ```
 #[macro_export]
 macro_rules! impl_child_of {
     ($child:ty, $($parent:ty),+ ) => {
