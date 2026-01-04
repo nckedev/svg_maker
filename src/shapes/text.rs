@@ -10,7 +10,7 @@
 use crate::{
     buffer::Buffer,
     element::Element,
-    impl_childof,
+    impl_parent_of,
     marker_traits::{ChildOf, ElementKind},
     units::Length,
     visit::Visit,

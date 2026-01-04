@@ -20,10 +20,26 @@ pub mod style;
 pub mod units;
 pub mod visit;
 
+/// first argument is the parent elementkind, rest of the arguments are the children,
+/// ```
+/// impl_parent_of(Svg, Line, Rect);
+/// ```
+/// will result in
+/// ```
+/// impl Childof<Svg> for Element<Line> {}
+/// impl Childof<Svg> for Element<Rect> {}
+/// ```
 #[macro_export]
-macro_rules! impl_childof {
-    ($type:ty, $($impl:ty),+ ) => {
-        $(impl $crate::marker_traits::ChildOf<$type> for $crate::element::Element<$impl> {} )+
+macro_rules! impl_parent_of {
+    ($parent:ty, $($child:ty),+ ) => {
+        $(impl $crate::marker_traits::ChildOf<$parent> for $crate::element::Element<$child> {} )+
+    };
+}
+
+#[macro_export]
+macro_rules! impl_child_of {
+    ($child:ty, $($parent:ty),+ ) => {
+        $(impl $crate::marker_traits::ChildOf<$parent> for $crate::element::Element<$child> {} )+
     };
 }
 

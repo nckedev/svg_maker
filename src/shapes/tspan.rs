@@ -2,7 +2,7 @@ use std::ops::Deref;
 
 use crate::shapes::text::Text;
 
-struct Tspan(Text);
+pub struct Tspan(Text);
 
 impl Deref for Tspan {
     type Target = Text;
@@ -10,4 +10,14 @@ impl Deref for Tspan {
     fn deref(&self) -> &Self::Target {
         &self.0
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::char::ToLowercase;
+
+    use super::*;
+
+    #[test]
+    fn tspan() {}
 }

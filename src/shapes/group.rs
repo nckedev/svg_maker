@@ -2,13 +2,13 @@ use svg_maker_derive::{BaseStyle, ContainerElement};
 
 use crate::{
     element::Element,
-    impl_childof,
+    impl_parent_of,
     marker_traits::ElementKind,
     shapes::{path::Path, rect::Rect},
     visit::Visit,
 };
 
-impl_childof!(Group, Rect, Path);
+impl_parent_of!(Group, Rect, Path);
 
 #[derive(Debug, Default, ContainerElement, BaseStyle)]
 pub struct Group {}
