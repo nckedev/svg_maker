@@ -4,17 +4,21 @@ use svg_maker_derive::*;
 
 use crate::{
     buffer::Buffer,
+    shapes::{
+        circle::Circle, group::Group, line::Line, polygon::Polygon, rect::Rect, svg::Svg, text::Text,
+        tspan::Tspan, use_href::Use,
+    },
     units::{AlignAspectRatio, MeetOrSlice},
     visit::Visit,
 };
 
-pub use crate::marker_traits::Shape;
+pub use crate::marker_traits::*;
 
 pub mod animations;
 mod buffer;
 pub mod color;
 pub mod element;
-mod marker_traits;
+pub mod marker_traits;
 pub mod shapes;
 pub mod style;
 pub mod units;
@@ -53,6 +57,21 @@ macro_rules! impl_child_of {
         $(impl $crate::marker_traits::ChildOf<$parent> for $crate::element::Element<$child> {} )+
     };
 }
+
+#[macro_export]
+macro_rules! impl_parent_child {
+    ($parent:ty, $($child:ty),+ ) => {
+        $(
+        impl $crate::marker_traits::ChildOf<$parent> for $crate::element::Element<$child> {}
+        // impl $crate::marker_traits::ParentOf<$crate::element::Element<$child>> for $parent { }
+        )+
+
+    };
+}
+
+impl_parent_child!(Svg, Use, Line, Rect, Circle, Text, Polygon);
+impl_parent_child!(Group, Use, Line, Rect, Circle, Text, Polygon);
+impl_parent_child!(Text, Tspan);
 
 #[derive(Clone, Copy, Debug, Default)]
 struct Viewbox {
@@ -127,6 +146,7 @@ impl Visit for Raw {
     }
 }
 
+#[derive(Debug)]
 struct PreserveAspectRatio {
     alignment: AlignAspectRatio,
     meet_or_slice: MeetOrSlice,

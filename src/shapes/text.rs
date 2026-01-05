@@ -7,10 +7,15 @@
 // Text content child elements
 // <a>
 
+use std::fmt::Debug;
+
+// text can be child of
+//<svg> <g> <a> <defs> <marker> <mask> <pattern> <symbol> <switch> <clipPath>
+//container element =
+//<svg> <g> <a> <defs> <marker> <mask> <pattern> <symbol> <switch>
 use crate::{
     buffer::Buffer,
     element::Element,
-    impl_parent_of,
     marker_traits::{ChildOf, ElementKind},
     units::Length,
     visit::Visit,
@@ -101,18 +106,20 @@ impl Visit for LengthAdjust {
 
 #[cfg(test)]
 mod tests {
-    use crate::Options;
+    use crate::{Options, Parent};
 
     use super::*;
 
     #[test]
     fn text() {
-        let _t = Element::text(1, 2).push("test".to_string());
+        let text = Element::text(1, 2).push("test".to_string());
+
         let mut opts = Options::default();
         opts.optimizations.remove_newline = true;
         opts.optimizations.remove_indent = true;
+
         let expected = r#"<text x="1" y="2">test</text>"#;
-        let rendered = _t.render(Some(opts));
+        let rendered = text.render(Some(opts));
         assert_eq!(rendered, expected);
     }
 }

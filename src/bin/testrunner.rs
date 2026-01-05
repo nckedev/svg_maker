@@ -3,16 +3,17 @@
 use std::error::Error;
 
 use svg_maker::{
-    Shape,
+    Parent, Shape,
     color::{Color, Oklch},
-    element::Element,
+    element::{Element, Transform},
     shapes::{path::Path, svg::Svg},
-    style::LineJoin,
+    units::{AlignAspectRatio, MeetOrSlice},
     visit::Visit,
 };
 
 fn main() {
     let e = Element::line(10, 10, 100, 100);
+    let c = Element::circle(1, 1, 1);
 
     let s = Element::svg()
         .viewbox(0, 0, 400, 400)
@@ -26,19 +27,19 @@ fn main() {
             } 
             "#,
         )
-        .def(
-            Element::path()
-                .move_to(10, 400)
-                .line_relative(0, -300)
-                .line_relative(50, 0)
-                .line_relative(0, 300)
-                .id("new")
-                .stroke(Color::Red)
-                .stroke_width(4)
-                .stroke_linejoin(LineJoin::Round)
-                .fill(Color::Black),
-        )
-        .def(Element::line(12, 23, 123, 12).id("id"))
+        // .def(
+        //     Element::path()
+        //         .move_to(10, 400)
+        //         .line_relative(0, -300)
+        //         .line_relative(50, 0)
+        //         .line_relative(0, 300)
+        //         .id("new")
+        //         .stroke(Color::Red)
+        //         .stroke_width(4)
+        //         .stroke_linejoin(LineJoin::Round)
+        //         .fill(Color::Black),
+        // )
+        // .def(Element::line(12, 23, 123, 12).id("id"))
         .push(
             Element::use_href(1, 2)
                 .height(400)
@@ -201,7 +202,7 @@ fn barchart(
             .cubic_bezier_relative((0, -offset), (0, -offset), (offset, -offset))
             .horizontal_line_relative(topbar)
             .cubic_bezier_relative((offset, 0), (offset, 0), (offset, offset))
-            .vertical_line_relative(bar_height as u32);
+            .vertical_line_relative(bar_height);
 
         paths.push(p);
     }
@@ -240,12 +241,14 @@ fn barchart(
     let s = Element::svg()
         .css(css)
         .version("2")
-        .push(Element::group().id("bars").push_iter(paths))
-        .size(400, 400)
-        .preserv_aspect_ratio(
-            svg_maker::units::AlignAspectRatio::XMidYMid,
-            svg_maker::units::MeetOrSlice::Meet,
+        .push(
+            Element::group()
+                .id("bars")
+                .push_iter(paths)
+                .transform(Transform::Translate(60., 0.)),
         )
+        .size(400, 400)
+        .preserv_aspect_ratio(AlignAspectRatio::XMidYMid, MeetOrSlice::Meet)
         .viewbox(0, 0, 400, 400);
 
     Ok(s)

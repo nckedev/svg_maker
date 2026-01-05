@@ -39,15 +39,24 @@ pub trait Shape {
 pub trait Animate {}
 pub trait Descriptive {}
 
-pub trait ChildOf<T: Visit + ElementKind>: Any
+pub trait ChildOf<T>: Any
 where
     Self: Visit + Debug,
 {
 }
 
+pub trait Parent<P>
+where
+    Self: Visit + Debug,
+{
+    fn push<C: ChildOf<P>>(self, value: C) -> Self;
+    fn push_iter<C: ChildOf<P>>(self, values: impl IntoIterator<Item = C>) -> Self;
+    fn push_vec<C: ChildOf<P>>(self, values: Vec<C>) -> Self;
+}
+
 pub trait RootElement {}
 
-pub trait ElementKind {
+pub trait ElementKind: Visit {
     const TAG: &'static str;
 }
 
@@ -61,4 +70,4 @@ pub trait Hx {}
 pub trait Renderable {}
 
 ///<a>, <defs>, <g>, <marker>, <mask>, <pattern>, <svg>, <switch>, <symbol>
-pub trait ContainerElement {}
+pub trait ContainerElement: Visit + ElementKind {}

@@ -1,8 +1,6 @@
-use svg_maker_derive::*;
+use crate::{BaseStyle, ElementKind, Hx, OpenEndedShape};
 
-use crate::{
-    buffer::Buffer, element::Element, marker_traits::ElementKind, units::Length, visit::Visit,
-};
+use crate::{buffer::Buffer, element::Element, units::Length, visit::Visit};
 
 #[derive(Debug, Default, BaseStyle, OpenEndedShape, Hx)]
 pub struct Line {

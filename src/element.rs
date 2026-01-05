@@ -27,6 +27,34 @@ pub struct Element<T> {
     children: Vec<Box<dyn ChildOf<T>>>,
 }
 
+// Parent of Line for Element<svg>
+// child of is implemented for Element<Use>
+// c = Element<Use>
+// p = svg
+impl<P> Parent<P> for Element<P>
+where
+    P: ElementKind + Debug,
+{
+    fn push<C: ChildOf<P>>(mut self, value: C) -> Self {
+        self.children.push(Box::new(value));
+        self
+    }
+
+    fn push_iter<C: ChildOf<P>>(mut self, values: impl IntoIterator<Item = C>) -> Self {
+        for v in values {
+            self.children.push(Box::new(v));
+        }
+        self
+    }
+
+    fn push_vec<C: ChildOf<P>>(mut self, values: Vec<C>) -> Self {
+        for v in values {
+            self.children.push(Box::new(v));
+        }
+        self
+    }
+}
+
 impl<T: ElementKind + Visit> From<T> for Element<T> {
     fn from(value: T) -> Self {
         Element::new(value)
@@ -69,10 +97,10 @@ impl<T: Visit + ElementKind> Visit for Element<T> {
             return;
         }
         buffer.push_tag(T::TAG);
-        self.kind.visit(buffer);
         buffer.push_attr_opt("id", &self.id);
         buffer.push_attr_opt("class", &self.class);
         self.hx.visit(buffer);
+        self.kind.visit(buffer);
         buffer.push_attr_opt("transform", &self.transforms);
         self.style.visit(buffer);
         //TODO: if the element has child elementes like animations, include them before closing, if not do a
@@ -121,24 +149,6 @@ impl<T: ElementKind + Visit> Element<T> {
             kind,
             children: vec![],
         }
-    }
-
-    pub fn push<U>(mut self, value: U) -> Self
-    where
-        U: ChildOf<T> + Visit + 'static,
-    {
-        self.children.push(Box::new(value));
-        self
-    }
-
-    pub fn push_iter<U>(mut self, value: impl IntoIterator<Item = U>) -> Self
-    where
-        U: ChildOf<T> + Visit + 'static,
-    {
-        for v in value {
-            self.children.push(Box::new(v) as Box<dyn ChildOf<T>>);
-        }
-        self
     }
 
     pub fn class(mut self, class: &str) -> Self {

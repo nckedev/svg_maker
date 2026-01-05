@@ -1,16 +1,15 @@
-use svg_maker_derive::{BaseStyle, ContainerElement};
+use svg_maker_derive::BaseStyle;
 
 use crate::{
     element::Element,
-    impl_parent_of,
-    marker_traits::ElementKind,
-    shapes::{path::Path, rect::Rect},
+    marker_traits::{ChildOf, ElementKind},
+    shapes::svg::Svg,
     visit::Visit,
 };
 
-impl_parent_of!(Group, Rect, Path);
+impl ChildOf<Svg> for Element<Group> {}
 
-#[derive(Debug, Default, ContainerElement, BaseStyle)]
+#[derive(Debug, Default, BaseStyle)]
 pub struct Group {}
 
 impl Element<Group> {
@@ -29,7 +28,7 @@ impl Visit for Group {
 
 #[cfg(test)]
 mod tests {
-    use crate::Options;
+    use crate::{Options, Parent};
 
     use super::*;
 

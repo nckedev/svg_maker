@@ -11,7 +11,7 @@ use crate::{
     visit::Visit,
 };
 
-#[derive(BaseStyle, ContainerElement)]
+#[derive(BaseStyle, ContainerElement, Debug)]
 pub struct Svg {
     w: Option<Length>,
     h: Option<Length>,
@@ -23,7 +23,7 @@ pub struct Svg {
     defs: Vec<Box<dyn ChildOf<Self>>>,
 }
 //
-impl<T: ElementKind + Visit + 'static + Debug> ChildOf<Svg> for Element<T> {}
+// impl<T: ElementKind + Visit + 'static + Debug> ChildOf<Svg> for Element<T> {}
 // impl ChildOf<Svg> for Element<Rect> {}
 // impl ChildOf<Svg> for Element<Path> {}
 // impl ChildOf<Svg> for Element<Use> {}
@@ -104,6 +104,8 @@ impl Element<Svg> {
         self
     }
 
+    // TODO: This should be its own element and be held i Element.children with the rest of the
+    // children
     pub fn def<E>(mut self, el: Element<E>) -> Self
     where
         Element<E>: ChildOf<Svg> + BaseElement,

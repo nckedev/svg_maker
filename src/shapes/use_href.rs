@@ -26,6 +26,7 @@ impl Use {
         }
     }
 }
+
 impl Element<Use> {
     #[must_use]
     pub fn use_href<X, Y>(x: X, y: Y) -> Self

@@ -2,6 +2,7 @@ pub mod circle;
 pub mod group;
 pub mod line;
 pub mod path;
+pub mod polygon;
 pub mod rect;
 pub mod svg;
 pub mod text;

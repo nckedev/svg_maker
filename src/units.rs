@@ -359,7 +359,7 @@ impl Visit for Time {
 
 // ====== ALignAspectRatio ====================================================
 
-#[derive(PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum AlignAspectRatio {
     None,
     XMinYMin,
@@ -393,6 +393,7 @@ impl Visit for AlignAspectRatio {
 
 // ====== MeetOrSlice =========================================================
 
+#[derive(Debug)]
 pub enum MeetOrSlice {
     Meet,
     Slice,

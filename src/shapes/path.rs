@@ -1,11 +1,15 @@
 use crate::{
     buffer::Buffer,
     element::Element,
-    marker_traits::ElementKind,
+    marker_traits::{ChildOf, ElementKind},
+    shapes::{group::Group, svg::Svg},
     units::{Coord, XCoord, YCoord},
     visit::Visit,
 };
 use svg_maker_derive::*;
+
+impl ChildOf<Svg> for Element<Path> {}
+impl ChildOf<Group> for Element<Path> {}
 
 #[derive(Debug, BaseStyle, Shape)]
 pub struct Path {
