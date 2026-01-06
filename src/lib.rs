@@ -159,6 +159,15 @@ impl Visit for PreserveAspectRatio {
     }
 }
 
+mod tester {
+    use crate::shapes::svg::Svg;
+
+    /// renders the svgs to a html page
+    fn run(svgs : &[Svg]) {
+        // TODO: render the svgs in a grid 
+    }
+}
+
 #[cfg(test)]
 mod tests {
     // use crate::{element::Element, shapes::path::Path};
