@@ -1,5 +1,6 @@
 use std::{
     collections::VecDeque,
+    fmt::Display,
     ops::{Add, Sub},
     rc::Rc,
 };
@@ -41,7 +42,7 @@ impl<T: Num + Into<f64>> From<T> for XCoord {
 
 impl Visit for XCoord {
     fn visit(&self, buffer: &mut Buffer) {
-        buffer.push_str(&self.0.to_string());
+        buffer.push_str(&format!("{}", Truncated(self.0)));
     }
 }
 
@@ -65,7 +66,7 @@ impl Visit for YCoord {
         } else {
             self.0
         };
-        buffer.push_str(&value.to_string());
+        buffer.push_str(&format!("{}", Truncated(value)));
     }
 }
 
@@ -406,6 +407,34 @@ impl Visit for MeetOrSlice {
             MeetOrSlice::Slice => " slice",
         };
         buffer.push_str(v);
+    }
+}
+
+#[derive(Debug)]
+pub enum TextAnchor {
+    Start,
+    Middle,
+    End,
+}
+
+impl Visit for TextAnchor {
+    fn visit(&self, buffer: &mut Buffer) {
+        let str = match self {
+            TextAnchor::Start => "start",
+            TextAnchor::Middle => "middle",
+            TextAnchor::End => "end",
+        };
+        buffer.push_str(str);
+    }
+}
+
+struct Truncated(f64);
+
+impl Display for Truncated {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        const PRECISION: f64 = 1e3;
+        let rounded = (self.0 * PRECISION).round() / PRECISION;
+        write!(f, "{}", rounded)
     }
 }
 
