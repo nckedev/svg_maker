@@ -5,8 +5,8 @@ use svg_maker_derive::*;
 use crate::{
     buffer::Buffer,
     shapes::{
-        circle::Circle, group::Group, line::Line, polygon::Polygon, rect::Rect, svg::Svg, text::Text,
-        tspan::Tspan, use_href::Use,
+        circle::Circle, group::Group, line::Line, path::Path, polygon::Polygon, rect::Rect,
+        svg::Svg, text::Text, tspan::Tspan, use_href::Use,
     },
     units::{AlignAspectRatio, MeetOrSlice},
     visit::Visit,
@@ -19,6 +19,8 @@ mod buffer;
 pub mod color;
 pub mod element;
 pub mod marker_traits;
+mod measure;
+mod path_parser;
 pub mod shapes;
 pub mod style;
 pub mod units;
@@ -62,16 +64,25 @@ macro_rules! impl_child_of {
 macro_rules! impl_parent_child {
     ($parent:ty, $($child:ty),+ ) => {
         $(
-        impl $crate::marker_traits::ChildOf<$parent> for $crate::element::Element<$child> {}
+        impl $crate::marker_traits::ChildOf<$parent> for $crate::element::Element<$child> {
+            fn as_any(&self) -> &dyn std::any::Any { self }
+            fn as_any_mut(&mut self) -> &mut dyn std::any::Any { self }
+            fn get_z_index(&self) -> Option<i32> {
+                self.z_index
+            }
+            fn get_id(&self) -> Option<&str> {
+                self.id.as_ref().map(|s| s.as_str())
+            }
+        }
         // impl $crate::marker_traits::ParentOf<$crate::element::Element<$child>> for $parent { }
         )+
 
     };
 }
 
-impl_parent_child!(Svg, Use, Line, Rect, Circle, Text, Polygon);
-impl_parent_child!(Group, Use, Line, Rect, Circle, Text, Polygon);
-impl_parent_child!(Text, Tspan);
+impl_parent_child!(Svg, Use, Line, Rect, Circle, Text, Polygon, Path, Group);
+impl_parent_child!(Group, Group, Use, Line, Rect, Circle, Text, Polygon, Path);
+impl_parent_child!(Text, Tspan, String);
 
 #[derive(Clone, Copy, Debug, Default)]
 struct Viewbox {
@@ -101,6 +112,10 @@ pub struct Optimizations {
     pub convert_ms_to_s_if_shorter: bool,
     pub remove_newline: bool,
     pub remove_indent: bool,
+    /// collapses path commands of the same kind into one
+    /// # Example
+    /// d="L10,20 L30,40" => d="L10,20,30,40"
+    pub collapse_same_path_command: bool,
 }
 
 impl Optimizations {
@@ -111,17 +126,21 @@ impl Optimizations {
             convert_ms_to_s_if_shorter: true,
             remove_newline: true,
             remove_indent: true,
+            collapse_same_path_command: true,
         }
     }
 }
 
 impl Default for Optimizations {
-    /// default configuration for optimizations
+    /// Default configuration for optimizations
+    /// ```rust.ignore
     /// remove_unit_for_px: true,
     /// remove_unit_for_deg: true,
     /// convert_ms_to_s_if_shorter: false,
     /// remove_newline: false,
     /// remove_indent: false,
+    /// collapse_same_path_command: false,
+    /// ```
     fn default() -> Self {
         Self {
             remove_unit_for_px: true,
@@ -129,6 +148,7 @@ impl Default for Optimizations {
             convert_ms_to_s_if_shorter: false,
             remove_newline: false,
             remove_indent: false,
+            collapse_same_path_command: false,
         }
     }
 }
@@ -163,25 +183,25 @@ mod tester {
     use crate::shapes::svg::Svg;
 
     /// renders the svgs to a html page
-    fn run(svgs : &[Svg]) {
-        // TODO: render the svgs in a grid 
+    fn run(svgs: &[Svg]) {
+        // TODO: render the svgs in a grid
     }
 }
 
 #[cfg(test)]
 mod tests {
-    // use crate::{element::Element, shapes::path::Path};
+    use crate::{element::Element, shapes::path::Path};
 
-    // use super::*;
+    use super::*;
 
-    // #[test]
-    // fn get_element_by_id() {
-    // let mut s = Element::svg().push(Element::path().id("test_id"));
-    // let path = s.get_element_by_id_mut::<Element<Path>>("test_id");
-    // assert!(path.is_some());
-    // assert_eq!(path.unwrap().id.as_ref().unwrap(), &"test_id".to_string());
+    #[test]
+    fn get_element_by_id() {
+        let mut s = Element::svg().push(Element::path().id("test_id"));
+        let path = s.get_element_by_id_mut::<Element<Path>>("test_id");
+        assert!(path.is_some());
+        assert_eq!(path.unwrap().id.as_ref().unwrap(), &"test_id".to_string());
 
-    // let path = s.get_element_by_id_mut::<Path>("this_id_doesnt_exist");
-    // assert!(path.is_none());
-    // }
+        let path = s.get_element_by_id_mut::<Element<Path>>("this_id_doesnt_exist");
+        assert!(path.is_none());
+    }
 }

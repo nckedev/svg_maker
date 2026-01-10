@@ -3,11 +3,11 @@
 use std::error::Error;
 
 use svg_maker::{
-    Parent, Shape,
+    Parent,
     color::{Color, Oklch},
     element::{Element, Transform},
-    shapes::{path::Path, svg::Svg},
-    units::{AlignAspectRatio, MeetOrSlice},
+    shapes::{group::Group, svg::Svg, text::Text},
+    units::{AlignAspectRatio, MeetOrSlice, Percent, TextAnchor},
     visit::Visit,
 };
 
@@ -57,15 +57,26 @@ fn main() {
     //         .fill(Color::Red),
     // );
 
-    let v = [100, 100, 130, 350, 40];
+    let v = vec![
+        BarchartValue::new("Mån", 100.),
+        BarchartValue::new("Tis", 5.),
+        BarchartValue::new("Ons", 112.),
+        BarchartValue::new("Tors", 350.),
+        BarchartValue::new("Fre", 501.),
+    ];
+    let opts = BarChartOpts {
+        width: 400.,
+        height: 400.,
+        ..Default::default()
+    };
     println!(
         "barchart: \n {}",
-        barchart(&v, &BarChartOpts::default(), &Theme::default())
+        barchart("barcharts", &v, &opts, &Theme::default())
             .unwrap()
             .render(None)
     );
 
-    let _ = barchart(&v, &BarChartOpts::default(), &Theme::default())
+    let _ = barchart("barcharts", &v, &opts, &Theme::default())
         .unwrap()
         .debug(1);
 }
@@ -136,6 +147,10 @@ struct BarChartOpts {
     height: f64,
     width: f64,
     legend_pos: LegendPos,
+    show_axis_line: bool,
+    show_labels: bool,
+    show_title: bool,
+    min_y_label_value: f64,
 }
 
 impl Default for BarChartOpts {
@@ -148,6 +163,10 @@ impl Default for BarChartOpts {
             height: 100.,
             width: 100.,
             legend_pos: LegendPos::default(),
+            show_axis_line: true,
+            show_labels: true,
+            show_title: true,
+            min_y_label_value: 0_f64,
         }
     }
 }
@@ -160,52 +179,53 @@ pub enum LegendPos {
     None,
 }
 
+struct Size {
+    w: f64,
+    h: f64,
+}
+
+impl From<(f64, f64)> for Size {
+    fn from(value: (f64, f64)) -> Self {
+        Self {
+            w: value.0,
+            h: value.1,
+        }
+    }
+}
+
+struct BarchartValue {
+    value: f64,
+    label: String,
+    order: Option<u32>,
+}
+impl BarchartValue {
+    fn new(label: &str, value: impl Into<f64>) -> Self {
+        Self {
+            value: value.into(),
+            label: label.to_string(),
+            order: None,
+        }
+    }
+}
+
 fn barchart(
-    values: &[i32],
+    title: &str,
+    values: &[BarchartValue],
     opts: &BarChartOpts,
     theme: &Theme,
 ) -> Result<Element<Svg>, Box<dyn Error>> {
-    let len = values.len() as u32;
-    const SIZE: u32 = 400;
-    let max_bar_width = 100;
-    // if SIZE / len < max_bar_width {
-    //     return Err("min bar width".into());
-    // }
-    let padding = 20;
-    let availible_height = 400 - (padding * 2);
-    let availible_width = 400 - (padding * 2);
-    let start_x = padding;
-    let start_y = 400 - padding;
-    let scale_factor = 1;
-    // TODO: check if any bar is higher tham availible height, if so scale them donw with some
-    // factor
-    let spacing = {
-        let total_width = len * 50;
-        let remaining_space = availible_width - total_width;
-        remaining_space / (len - 1)
-    };
-    let mut paths = vec![];
-    let offset = 20;
-    let topbar = 10; // width of the top of the bar that isnt curved 
-    for (i, v) in values.iter().enumerate() {
-        let bar_height = v - offset;
-        let p = Path::new()
-            .into_element()
-            .id(&format!("bar{}", i))
-            .class("hover")
-            // .stroke_dasharray(&[Percent(9), 2])
-            .move_to(
-                start_x + ((spacing + (offset * 2 + topbar) as u32) * i as u32),
-                start_y,
-            )
-            .vertical_line_relative(-bar_height)
-            .cubic_bezier_relative((0, -offset), (0, -offset), (offset, -offset))
-            .horizontal_line_relative(topbar)
-            .cubic_bezier_relative((offset, 0), (offset, 0), (offset, offset))
-            .vertical_line_relative(bar_height);
+    let padding = 20.;
+    let availible_height = opts.height - (padding * 2.);
+    let availible_width = opts.width - (padding * 2.);
 
-        paths.push(p);
-    }
+    let title_height = 20.;
+    let title_offset_y = padding;
+    let bars_offset_y = padding + if opts.show_title { title_height } else { 0. };
+    let bars_offset_x = padding;
+    let bars_width = opts.width - (padding * 2.);
+    let bars_height =
+        opts.height - (padding * 2.) - if opts.show_title { title_height } else { 0. };
+
     let css = &{
         let primary = theme.palette.primary.visit_return();
         let secondary = theme.palette.seconday.visit_return();
@@ -213,6 +233,8 @@ fn barchart(
         format!(
             r#"
         :root {{
+              font-family: Inter, sans-serif;
+              font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
             --primary_hue: {primary};
             --secondary_hue: 24;
             --stroke_hue: 0;
@@ -223,8 +245,11 @@ fn barchart(
             --stroke: {neutral};
             --black: oklch(40% 0.13 80);
         }}
+        @supports (font-variation-settings: normal) {{
+          :root {{ font-family: InterVariable, sans-serif; }}
+        }}
         svg {{
-            background: red;
+            border: 2px solid red;
         }}
         path.hover {{
             fill: var(--primary);
@@ -234,22 +259,184 @@ fn barchart(
         path.hover:hover {{
             fill: var(--secondary);
         }}
+        text {{
+            font-size: 24px;
+            fill: White;
+            stroke: White;
+        }}
+
+        text.label_x {{
+            font-size: 12px;
+            font-weight: 100;
+            stroke-width: 1;
+        }}
     "#
         )
     };
 
+    let title = generate_title("title", (100., 10.).into());
+    let bars = generate_bars(values, bars_width, bars_height);
+
     let s = Element::svg()
         .css(css)
         .version("2")
-        .push(
-            Element::group()
-                .id("bars")
-                .push_iter(paths)
-                .transform(Transform::Translate(60., 0.)),
+        .push_if(
+            opts.show_axis_line,
+            Element::group().id("lines").push(
+                Element::path()
+                    .move_to(0, 0)
+                    .vertical_line_relative(360)
+                    .horizontal_line_relative(360)
+                    .fill(Color::Transparent)
+                    .stroke(Color::White)
+                    .transform(Transform::Translate(20., 20.)),
+            ),
         )
-        .size(400, 400)
+        .push(
+            title
+                .transform(Transform::Translate(0., title_offset_y))
+                .stroke(Color::White),
+        )
+        .push(
+            bars.id("bars")
+                .transform(Transform::Translate(bars_offset_x, bars_offset_y)),
+        )
+        // .size(400, 400)
         .preserv_aspect_ratio(AlignAspectRatio::XMidYMid, MeetOrSlice::Meet)
         .viewbox(0, 0, 400, 400);
 
     Ok(s)
+}
+
+fn generate_title(title: &str, size: Size) -> Element<Text> {
+    Element::text(Percent(50), 10)
+        .id("title")
+        .stroke_linejoin(svg_maker::style::LineJoin::Miter)
+        .stroke_miterlimit(0.)
+        .text_anchor(TextAnchor::Middle)
+        .push("My awsome chart")
+}
+
+fn generate_bars(values: &[BarchartValue], w: f64, h: f64) -> Element<Group> {
+    // height of the highest bar
+    let max = {
+        let max_entry = values.iter().max_by(|a, b| a.value.total_cmp(&b.value));
+        if let Some(max) = max_entry {
+            max.value
+        } else {
+            0.
+        }
+    };
+
+    // set the scale factor if the the highest (max) bar is higher than the
+    // avalible height (h)
+    let max_barvalue =
+        find_closest_above(&values.iter().map(|b| b.value).collect::<Vec<_>>(), 500.);
+    let scale_factor = if max > h { h / max_barvalue } else { 1. };
+    let len = values.len();
+    let spacing = {
+        let total_width = (len * 50) as f64;
+        let remaining_space = w - total_width;
+        remaining_space / (len - 1) as f64
+    };
+    let offset_x = 20.; // radius of the corner
+    let offset_y = 20.; // radius of the corner
+    let topbar = 10.; // width of the top of the bar that isnt curved 
+
+    let mut paths = vec![];
+
+    for (i, v) in values.iter().enumerate() {
+        let offset_y = if offset_y > v.value * scale_factor {
+            0.
+        } else {
+            offset_y
+        };
+
+        let bar_height = (v.value * scale_factor) - offset_x;
+        eprintln!("max {} , barh: {}", max_barvalue, bar_height);
+        let p = Element::group()
+            .push(
+                Element::path()
+                    .id(&format!("bar{}", i))
+                    .class("hover")
+                    // .stroke_dasharray(&[Percent(9), 2])
+                    // .move_to(0. + ((spacing + (offset_x * 2. + topbar)) * i as f64), h)
+                    .move_to(0, 0)
+                    .vertical_line_relative(-bar_height)
+                    .cubic_bezier_relative((0., -offset_y), (0., -offset_y), (offset_x, -offset_y))
+                    .horizontal_line_relative(topbar)
+                    .cubic_bezier_relative((offset_x, 0.), (offset_x, 0.), (offset_x, offset_y))
+                    .vertical_line_relative(bar_height),
+            )
+            .push(
+                Element::text(offset_x + (topbar / 2.), 15)
+                    .class("label_x")
+                    .stroke_linejoin(svg_maker::style::LineJoin::Round)
+                    .text_anchor(TextAnchor::Middle)
+                    .stroke(Color::White)
+                    // PERF: clone here...
+                    .push(v.label.clone()),
+            )
+            .transform(Transform::Translate(
+                0. + ((spacing + (offset_x * 2. + topbar)) * i as f64),
+                h,
+            ));
+
+        paths.push(p);
+    }
+
+    Element::group().push_iter(paths)
+}
+
+/// finds the closest whole number above the max value of the array.
+/// ie 972 => 1000, 11 => 20
+/// return the biggest number of the calculated number above and min.
+fn find_closest_above(values: &[f64], min: f64) -> f64 {
+    let Some(max) = values.iter().max_by(|a, b| a.total_cmp(b)) else {
+        return 0.0;
+    };
+
+    if *max <= 0.0 {
+        return 0.0;
+    }
+    let exp = max.log10().floor();
+    let base = 10_f64.powf(exp);
+    let contender = (max / base).ceil() * base;
+    if contender > min { contender } else { min }
+}
+
+fn fmt_with_suffix(value: f64, decimals: usize) -> String {
+    const K: f64 = 1e3;
+    const M: f64 = 1e6;
+    const B: f64 = 1e9;
+    const T: f64 = 1e12;
+
+    let value = value.abs();
+
+    if value >= T {
+        format!("{:.*}T", decimals, value / T)
+    } else if value >= B {
+        format!("{:.*}B", decimals, value / B)
+    } else if value >= M {
+        format!("{:.*}M", decimals, value / M)
+    } else if value >= K {
+        format!("{:.*}K", decimals, value / K)
+    } else {
+        format!("{value}")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::fmt_with_suffix;
+
+    use super::*;
+
+    #[test]
+    fn test_fmt_with_suffix() {
+        let a = 1001.;
+        let a = find_closest_above(&[2000_f64], 0.);
+        let b = fmt_with_suffix(a, 0);
+        assert_eq!(b, "2K".to_owned());
+    }
 }

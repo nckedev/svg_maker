@@ -1,13 +1,6 @@
 use svg_maker_derive::BaseStyle;
 
-use crate::{
-    element::Element,
-    marker_traits::{ChildOf, ElementKind},
-    shapes::svg::Svg,
-    visit::Visit,
-};
-
-impl ChildOf<Svg> for Element<Group> {}
+use crate::{element::Element, marker_traits::ElementKind, visit::Visit};
 
 #[derive(Debug, Default, BaseStyle)]
 pub struct Group {}

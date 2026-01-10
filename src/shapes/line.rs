@@ -27,14 +27,14 @@ impl Line {
 }
 
 impl Element<Line> {
-    pub fn line<X, Y, W, H>(x: X, y: Y, w: W, h: H) -> Element<Line>
+    pub fn line<X1, Y1, X2, Y2>(x1: X1, y1: Y1, x2: X2, y2: Y2) -> Element<Line>
     where
-        X: Into<Length>,
-        Y: Into<Length>,
-        W: Into<Length>,
-        H: Into<Length>,
+        X1: Into<Length>,
+        Y1: Into<Length>,
+        X2: Into<Length>,
+        Y2: Into<Length>,
     {
-        let l = Line::new(x.into(), y.into(), w.into(), h.into());
+        let l = Line::new(x1.into(), y1.into(), x2.into(), y2.into());
         Element::new(l)
     }
 }

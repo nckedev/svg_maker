@@ -9,6 +9,8 @@
 
 use std::fmt::Debug;
 
+use svg_maker_derive::BaseStyle;
+
 // text can be child of
 //<svg> <g> <a> <defs> <marker> <mask> <pattern> <symbol> <switch> <clipPath>
 //container element =
@@ -17,14 +19,47 @@ use crate::{
     buffer::Buffer,
     element::Element,
     marker_traits::{ChildOf, ElementKind},
-    units::Length,
+    units::{Length, TextAnchor},
     visit::Visit,
 };
 
 //need to implement this manually since String is not an Element<T>
-impl ChildOf<Text> for String {}
+impl ChildOf<Text> for String {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 
-#[derive(Debug, Default)]
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
+
+    fn get_z_index(&self) -> Option<i32> {
+        None
+    }
+
+    fn get_id(&self) -> Option<&str> {
+        None
+    }
+}
+impl ChildOf<Text> for &'static str {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
+
+    fn get_z_index(&self) -> Option<i32> {
+        None
+    }
+
+    fn get_id(&self) -> Option<&str> {
+        None
+    }
+}
+
+#[derive(Debug, Default, BaseStyle)]
 pub struct Text {
     x: Vec<Length>,
     y: Vec<Length>,
@@ -33,6 +68,7 @@ pub struct Text {
     rotate: Option<Vec<f64>>,
     length_adjust: Option<LengthAdjust>,
     text_length: Option<Length>,
+    text_anchor: Option<TextAnchor>,
 }
 
 impl Element<Text> {
@@ -64,6 +100,13 @@ impl Element<Text> {
         self.text_length = Some(value.into());
         self
     }
+
+    /// Sets the center position of the text element.
+    /// useful for centering text
+    pub fn text_anchor(mut self, value: TextAnchor) -> Self {
+        self.text_anchor = Some(value);
+        self
+    }
 }
 
 impl Visit for Text {
@@ -80,6 +123,7 @@ impl Visit for Text {
         buffer.push_attr_opt("rotate", &self.rotate);
         buffer.push_attr_opt("lenghtAdjust", &self.length_adjust);
         buffer.push_attr_opt("textLenght", &self.text_length);
+        buffer.push_attr_opt("text-anchor", &self.text_anchor);
     }
 }
 

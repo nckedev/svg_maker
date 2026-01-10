@@ -1,5 +1,6 @@
 pub mod circle;
 pub mod group;
+mod horizontal_layout;
 pub mod line;
 pub mod path;
 pub mod polygon;

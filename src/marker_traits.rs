@@ -24,7 +24,7 @@ pub trait TextElementChild {}
 pub trait BaseElement: Visit + Any {
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
-    fn get_id(&self) -> Option<&str>;
+    // fn get_id(&self) -> Option<&str>;
 }
 
 pub trait Shape {
@@ -43,6 +43,10 @@ pub trait ChildOf<T>: Any
 where
     Self: Visit + Debug,
 {
+    fn as_any(&self) -> &dyn Any;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
+    fn get_z_index(&self) -> Option<i32>;
+    fn get_id(&self) -> Option<&str>;
 }
 
 pub trait Parent<P>
@@ -50,6 +54,13 @@ where
     Self: Visit + Debug,
 {
     fn push<C: ChildOf<P>>(self, value: C) -> Self;
+    fn push_if<C>(self, pred: bool, value: C) -> Self
+    where
+        C: ChildOf<P>,
+        Self: Sized,
+    {
+        if pred { self.push(value) } else { self }
+    }
     fn push_iter<C: ChildOf<P>>(self, values: impl IntoIterator<Item = C>) -> Self;
     fn push_vec<C: ChildOf<P>>(self, values: Vec<C>) -> Self;
 }

@@ -25,6 +25,9 @@ pub struct Element<T> {
     hx: Option<HxData>,
     pub(crate) kind: T,
     children: Vec<Box<dyn ChildOf<T>>>,
+    /// higher number is closer to the screen.
+    /// this property is not rendered, only used to sort the rendering order internally
+    pub(crate) z_index: Option<i32>,
 }
 
 // Parent of Line for Element<svg>
@@ -55,6 +58,13 @@ where
     }
 }
 
+impl<T: Renderable> Element<T> {
+    pub fn z_index(mut self, z: i32) -> Self {
+        self.z_index = Some(z);
+        self
+    }
+}
+
 impl<T: ElementKind + Visit> From<T> for Element<T> {
     fn from(value: T) -> Self {
         Element::new(value)
@@ -70,9 +80,9 @@ impl<T: Visit + 'static + ElementKind> BaseElement for Element<T> {
         self
     }
 
-    fn get_id(&self) -> Option<&str> {
-        self.id.as_deref()
-    }
+    // fn get_id(&self) -> Option<&str> {
+    //     self.id.as_deref()
+    // }
 }
 
 impl<T> Deref for Element<T> {
@@ -103,8 +113,9 @@ impl<T: Visit + ElementKind> Visit for Element<T> {
         self.kind.visit(buffer);
         buffer.push_attr_opt("transform", &self.transforms);
         self.style.visit(buffer);
-        //TODO: if the element has child elementes like animations, include them before closing, if not do a
-        //selfclose tag
+
+        // TODO: Sort children on z index and render them in order of small to big.
+
         if self.children.is_empty() {
             buffer.push_tag_self_close();
         } else {
@@ -125,11 +136,11 @@ where
     pub fn get_element_by_id_mut<U: ChildOf<T>>(&mut self, _id: &str) -> Option<&mut U> {
         eprintln!("{:#?}", self.children);
         for child in &mut self.children {
-            let c = child as &mut dyn Any;
-            let ch = c.downcast_mut::<U>();
+            let child_any = child.as_any_mut();
+            let ch = child_any.downcast_mut::<U>();
             // dbg!(&ch);
             if let Some(b) = ch
-            // && b.id == Some(id.to_string())
+                && b.get_id() == Some(_id)
             {
                 return Some(b);
             }
@@ -148,6 +159,7 @@ impl<T: ElementKind + Visit> Element<T> {
             hx: None,
             kind,
             children: vec![],
+            z_index: Some(0),
         }
     }
 

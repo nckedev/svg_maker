@@ -147,12 +147,21 @@ impl Element<Svg> {
             r##"
         <html>
   <head>
+  <meta charset="UTF-8" /> 
     <title>SVG MAKER DEBUG</title>
-    {meta}
+    <!-- {meta} -->
+    <!-- allows for hot reloading, start a server with "python -m http.server -d ." -->
+    <script  src="https://kalabasa.github.io/simple-live-reload/script.js"></script>
+
+        <link rel="preconnect" href="https://rsms.me/">
+        <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+
+       
   </head>
   <body style="background:black;">
     {}
     <div>
+    <!--
         <input type="range" min="0" max="100" id="slider_l" />
         <label for="slider_l">Lightness</label>
         <input type="range" min="0" max="360" id="slider_c" />
@@ -163,6 +172,7 @@ impl Element<Svg> {
         <label for="slider_secondary_h">Secodnary</label>
         <input type="range" min="0" max="360" id="slider_stroke_h" />
         <label for="slider_stroke_h">Stroke</label>
+    -->
     </div>
     <script>
 
@@ -226,6 +236,7 @@ impl Svg {
     #[must_use]
     pub fn render(&self) -> String {
         let mut buffer = Buffer::with_capacity(100);
+        // buffer.push_str(r#"<?xml version="1.0" encoding="UTF-8"?>"#);
         self.visit(&mut buffer);
         buffer.str().to_string()
     }

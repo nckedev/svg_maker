@@ -26,7 +26,7 @@ impl Visit for Color {
             Color::Black => "black",
             Color::White => "white",
             Color::CssName(name) => name,
-            Color::Transparent => todo!(),
+            Color::Transparent => "transparent",
             Color::Rgb(r, g, b) => &format!("rgb({} {} {})", r, g, b),
             Color::Rgba(_, _, _, _) => todo!(),
             Color::Hex(s) => s,

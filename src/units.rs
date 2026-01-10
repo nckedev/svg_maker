@@ -10,7 +10,7 @@ use num_traits::Num;
 
 use crate::{buffer::Buffer, visit::Visit};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Coord(pub XCoord, pub YCoord);
 
 impl Visit for Coord {
@@ -31,7 +31,13 @@ where
     }
 }
 
-#[derive(Display, Debug, Default)]
+impl From<[f64; 2]> for Coord {
+    fn from(value: [f64; 2]) -> Self {
+        Coord::from((value[0], value[1]))
+    }
+}
+
+#[derive(Display, Debug, Default, PartialEq)]
 pub struct XCoord(pub f64);
 
 impl<T: Num + Into<f64>> From<T> for XCoord {
@@ -46,7 +52,7 @@ impl Visit for XCoord {
     }
 }
 
-#[derive(Display, Debug, Default)]
+#[derive(Display, Debug, Default, PartialEq)]
 pub struct YCoord(pub f64);
 
 impl<T: Num + Into<f64>> From<T> for YCoord {
@@ -67,6 +73,33 @@ impl Visit for YCoord {
             self.0
         };
         buffer.push_str(&format!("{}", Truncated(value)));
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct CubicArgs {
+    pub p1: Coord,
+    pub p2: Coord,
+    pub end: Coord,
+}
+
+impl From<[f64; 6]> for CubicArgs {
+    fn from(value: [f64; 6]) -> Self {
+        Self {
+            p1: Coord::from((value[0], value[1])),
+            p2: Coord::from((value[2], value[3])),
+            end: Coord::from((value[4], value[5])),
+        }
+    }
+}
+
+impl Visit for CubicArgs {
+    fn visit(&self, buffer: &mut Buffer) {
+        self.p1.visit(buffer);
+        buffer.push_space();
+        self.p2.visit(buffer);
+        buffer.push_space();
+        self.end.visit(buffer);
     }
 }
 
@@ -428,6 +461,8 @@ impl Visit for TextAnchor {
     }
 }
 
+// ===== Truncated ============================================================
+
 struct Truncated(f64);
 
 impl Display for Truncated {
@@ -448,10 +483,10 @@ mod tests {
         use crate::{buffer::Buffer, units::Time, visit::Visit};
 
         #[rstest]
-        #[case(Time::MilliSeconds(2000f64), "2s")]
-        #[case(Time::MilliSeconds(200f64), "200ms")]
-        #[case(Time::MilliSeconds(2550f64), "2550ms")]
-        #[case(Time::Seconds(20f64), "20s")]
+        #[case(Time::MilliSeconds(2000_f64), "2s")]
+        #[case(Time::MilliSeconds(200_f64), "200ms")]
+        #[case(Time::MilliSeconds(2550_f64), "2550ms")]
+        #[case(Time::Seconds(20_f64), "20s")]
         fn time_shortening_optmization(#[case] before: Time, #[case] after: &str) {
             let mut buffer = Buffer::with_capacity(100);
             buffer.opts.optimizations.convert_ms_to_s_if_shorter = true;

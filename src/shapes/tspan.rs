@@ -10,7 +10,23 @@ use crate::{
 };
 
 //need to implement this manually since String is not an Element<T>
-impl ChildOf<Tspan> for String {}
+impl ChildOf<Tspan> for String {
+    fn as_any(&self) -> &dyn std::any::Any {
+        todo!()
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        todo!()
+    }
+
+    fn get_z_index(&self) -> Option<i32> {
+        None
+    }
+
+    fn get_id(&self) -> Option<&str> {
+        None
+    }
+}
 
 #[derive(Debug, Default)]
 pub struct Tspan {
