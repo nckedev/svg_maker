@@ -263,6 +263,11 @@ impl<T: BaseStyle> Element<T> {
         self.style.stroke_miterlimit = Some(limit);
         self
     }
+
+    pub fn style_kv(mut self, key: &str, value: impl ToString) -> Self {
+        self.style.kv.insert(key.to_string(), value.to_string());
+        self
+    }
 }
 
 impl<T: OpenEndedShape> Element<T> {

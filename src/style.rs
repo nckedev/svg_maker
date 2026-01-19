@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{Visit, buffer::Buffer, color::Color, units::Length};
 
 #[derive(Default, Debug)]
@@ -16,6 +18,8 @@ pub struct Style {
     pub stroke_opacity: Option<f32>,
 
     pub stroke_width: Option<Length>,
+
+    pub kv: HashMap<String, String>,
 }
 
 impl Visit for Style {
@@ -44,7 +48,9 @@ impl Visit for Style {
             stroke_miterlimit: None,
             stroke_opacity: None,
             stroke_width: None,
+            kv,
         } = &self
+            && kv.is_empty()
         {
             return;
         }
@@ -62,6 +68,9 @@ impl Visit for Style {
         visit_if_not_none!(stroke_linecap, "stroke-linecap");
         visit_if_not_none!(stroke_miterlimit, "stroke-miterlimit");
         visit_if_not_none!(stroke_opacity, "stroke_opacity");
+        for (k, v) in &self.kv {
+            buffer.push_str(&format!("{}:{}; ", k, v));
+        }
 
         buffer.pop(); //remove the last whitespace
         buffer.push_str(r##"""##);
