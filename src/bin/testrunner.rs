@@ -293,6 +293,13 @@ fn barchart(
             ),
         )
         .push(
+            Element::foreign_object(20, 10)
+                .id("div")
+                .width(30)
+                .height(20)
+                .push("<div style=\"background: red\">test</div>".to_string()),
+        )
+        .push(
             title
                 .transform(Transform::Translate(0., title_offset_y))
                 .stroke(Color::White),

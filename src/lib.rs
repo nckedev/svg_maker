@@ -80,8 +80,30 @@ macro_rules! impl_parent_child {
     };
 }
 
-impl_parent_child!(Svg, Use, Line, Rect, Circle, Text, Polygon, Path, Group);
-impl_parent_child!(Group, Group, Use, Line, Rect, Circle, Text, Polygon, Path);
+impl_parent_child!(
+    Svg,
+    Use,
+    Line,
+    Rect,
+    Circle,
+    Text,
+    Polygon,
+    Path,
+    Group,
+    ForeignObject
+);
+impl_parent_child!(
+    Group,
+    Group,
+    Use,
+    Line,
+    Rect,
+    Circle,
+    Text,
+    Polygon,
+    Path,
+    ForeignObject
+);
 impl_parent_child!(Text, Tspan, String);
 
 #[derive(Clone, Copy, Debug, Default)]
