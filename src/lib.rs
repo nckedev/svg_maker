@@ -5,8 +5,8 @@ use svg_maker_derive::*;
 use crate::{
     buffer::Buffer,
     shapes::{
-        circle::Circle, group::Group, line::Line, path::Path, polygon::Polygon, rect::Rect,
-        svg::Svg, text::Text, tspan::Tspan, use_href::Use,
+        circle::Circle, foreign_object::ForeignObject, group::Group, line::Line, path::Path,
+        polygon::Polygon, rect::Rect, svg::Svg, text::Text, tspan::Tspan, use_href::Use,
     },
     units::{AlignAspectRatio, MeetOrSlice},
     visit::Visit,
