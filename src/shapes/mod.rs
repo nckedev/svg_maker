@@ -5,6 +5,7 @@ mod horizontal_layout;
 pub mod line;
 pub mod path;
 pub mod polygon;
+pub mod polyline;
 pub mod rect;
 pub mod svg;
 pub mod text;
