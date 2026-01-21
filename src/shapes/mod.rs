@@ -1,4 +1,5 @@
 pub mod circle;
+pub mod ellipse;
 pub mod foreign_object;
 pub mod group;
 mod horizontal_layout;
