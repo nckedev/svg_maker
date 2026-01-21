@@ -10,13 +10,25 @@ pub struct Polygon {
 }
 
 impl Element<Polygon> {
-    pub fn polygon<P: Into<Coord>>(points: Vec<P>) -> Self {
-        let mut polygon = Polygon { points: vec![] };
-        for p in points {
-            polygon.points.push(p.into());
-        }
-
+    pub fn polygon() -> Self {
+        let polygon = Polygon { points: vec![] };
         Element::new(polygon)
+    }
+
+    /// Appends a vector of points to the list
+    pub fn add_points<P: Into<Coord>>(mut self, points: Vec<P>) -> Self {
+        let mut vec = vec![];
+        for p in points {
+            vec.push(p.into());
+        }
+        self.points.append(&mut vec);
+        self
+    }
+
+    /// Appends a point to the list
+    pub fn add_point<P: Into<Coord>>(mut self, point: P) -> Self {
+        self.points.push(point.into());
+        self
     }
 }
 
@@ -45,8 +57,12 @@ mod tests {
             Coord::from((20, 20)),
             Coord::from((10, 20)),
         ];
-        let polygon = Element::polygon(points).render(None);
+        let polygon = Element::polygon().add_points(points);
         let expected = r#"<polygon points="10,10 20,10 20,20 10,20"/>"#.to_string() + "\n";
-        assert_eq!(polygon, expected);
+        assert_eq!(polygon.render(None), expected);
+
+        let polygon = polygon.add_point((1, 1));
+        let expected = r#"<polygon points="10,10 20,10 20,20 10,20 1,1"/>"#.to_string() + "\n";
+        assert_eq!(polygon.render(None), expected);
     }
 }

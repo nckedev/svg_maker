@@ -10,7 +10,7 @@ use crate::{
     color::Color,
     marker_traits::*,
     style::{FillRule, LineCap, LineJoin, Style},
-    units::Length,
+    units::{Length, Px},
     visit::Visit,
 };
 
@@ -28,6 +28,7 @@ pub struct Element<T> {
     /// higher number is closer to the screen.
     /// this property is not rendered, only used to sort the rendering order internally
     pub(crate) z_index: Option<i32>,
+    path_length: Option<Px>,
 }
 
 // Parent of Line for Element<svg>
@@ -111,6 +112,7 @@ impl<T: Visit + ElementKind> Visit for Element<T> {
         buffer.push_attr_opt("class", &self.class);
         self.hx.visit(buffer);
         self.kind.visit(buffer);
+        buffer.push_attr_opt("pathLength", &self.path_length);
         buffer.push_attr_opt("transform", &self.transforms);
         self.style.visit(buffer);
 
@@ -160,6 +162,7 @@ impl<T: ElementKind + Visit> Element<T> {
             kind,
             children: vec![],
             z_index: Some(0),
+            path_length: None,
         }
     }
 
@@ -273,6 +276,13 @@ impl<T: BaseStyle> Element<T> {
 impl<T: OpenEndedShape> Element<T> {
     pub fn stroke_linecap(mut self, linecap: LineCap) -> Self {
         self.style.stroke_linecap = Some(linecap);
+        self
+    }
+}
+
+impl<T: Shape> Element<T> {
+    pub fn path_length(mut self, len: impl Into<Px>) -> Self {
+        self.path_length = Some(len.into());
         self
     }
 }
