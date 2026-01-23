@@ -3,7 +3,7 @@
 use std::error::Error;
 
 use svg_maker::{
-    Parent,
+    ChildOf, Parent,
     color::{Color, Oklch},
     element::{Element, Transform},
     shapes::{group::Group, svg::Svg, text::Text},
@@ -67,6 +67,7 @@ fn main() {
     let opts = BarChartOpts {
         width: 400.,
         height: 400.,
+        good_threshold: Some(200.),
         ..Default::default()
     };
     println!(
@@ -230,6 +231,7 @@ fn barchart(
         let primary = theme.palette.primary.visit_return();
         let secondary = theme.palette.seconday.visit_return();
         let neutral = theme.palette.neutral2.visit_return();
+        let good = theme.palette.good.visit_return();
         format!(
             r#"
         :root {{
@@ -242,6 +244,7 @@ fn barchart(
             --chroma: 0.2;
             --primary: {primary};
             --secondary: {secondary};
+            --good: {good};
             --stroke: {neutral};
             --black: oklch(40% 0.13 80);
         }}
@@ -269,6 +272,12 @@ fn barchart(
             font-size: 12px;
             font-weight: 100;
             stroke-width: 1;
+        }}
+
+        line.good {{
+            stroke: var(--good);
+            stroke-width: 1;
+            opacity: 0.5;
         }}
     "#
         )
@@ -299,7 +308,8 @@ fn barchart(
                 .height(20)
                 .push("<div style=\"background: red\">test</div>".to_string()),
         )
-        .push(
+        .push_if(
+            opts.show_title,
             title
                 .transform(Transform::Translate(0., title_offset_y))
                 .stroke(Color::White),
@@ -308,6 +318,18 @@ fn barchart(
             bars.id("bars")
                 .transform(Transform::Translate(bars_offset_x, bars_offset_y)),
         )
+        .push_if(opts.good_threshold.is_some(), {
+            if let Some(threshold) = opts.good_threshold {
+                // TODO: The scale is probably wrong here if the bars had to be scaled
+                Element::line(0, threshold, bars_width, threshold)
+                    .class("good")
+                    .transform(Transform::TranslateX(bars_offset_x))
+            } else {
+                // safe because the good_threshold is checked in the
+                // predicate for push_if
+                unreachable!()
+            }
+        })
         // .size(400, 400)
         .preserv_aspect_ratio(AlignAspectRatio::XMidYMid, MeetOrSlice::Meet)
         .viewbox(0, 0, 400, 400);

@@ -106,6 +106,8 @@ impl<T: Visit + ElementKind> Visit for Element<T> {
         if T::TAG == "STRING" {
             self.kind.visit(buffer);
             return;
+        } else if T::TAG == "EMPTY" {
+            return;
         }
         buffer.push_tag(T::TAG);
         buffer.push_attr_opt("id", &self.id);
